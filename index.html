@@ -1,910 +1,164 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ParcChien.paris — Où promener son chien à Paris ?</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;700;800;900&family=Nunito+Sans:wght=400;600;700&display=swap" rel="stylesheet">
-<!-- Inclusion de Leaflet pour la carte -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<meta charset="UTF-8" />
+<title>Dog Map Paris</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-:root {
-  --teal: #1D9E75; --teal-light: #E1F5EE; --teal-mid: #5DCAA5; --teal-dark: #085041;
-  --coral: #D85A30; --coral-light: #FAECE7; --coral-mid: #F0997B; --coral-dark: #712B13;
-  --purple: #7C3AED; --purple-light: #EDE9FE; --purple-mid: #A78BFA; --purple-dark: #4C1D95;
-  --amber: #BA7517; --amber-light: #FAEEDA;
-  --cream: #FDFCF8; --sand: #F5F2EB; --sand-mid: #EDE8DE;
-  --ink: #1A1814; --ink-mid: #4A4640; --ink-light: #8A8680; --white: #FFFFFF;
-  --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Nunito Sans', sans-serif; background: var(--sand); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
-nav { background: var(--white); border-bottom: 2px solid var(--sand-mid); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; }
-.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.logo-icon { width: 34px; height: 34px; background: var(--teal); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.logo-text { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; color: var(--ink); letter-spacing: -0.02em; }
-.logo-text span { color: var(--teal); }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-badge { font-size: 11px; font-weight: 700; background: var(--coral-light); color: var(--coral-dark); padding: 3px 10px; border-radius: 20px; }
-.nav-date { font-size: 11px; color: var(--ink-light); font-weight: 600; }
 
-.hero { background: var(--teal-light); border-bottom: 2px solid #9FE1CB; padding: 22px 20px 18px; }
-.hero-eyebrow { font-size: 11px; font-weight: 700; color: var(--teal-dark); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
-.hero-headline { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900; color: var(--teal-dark); line-height: 1.15; margin-bottom: 6px; letter-spacing: -0.02em; }
-.hero-headline .big { color: var(--coral); font-size: 34px; }
-.hero-sub { font-size: 14px; color: #0F6E56; font-weight: 600; font-style: italic; }
+#dashboard {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    width: 240px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
 
-.stats-bar { background: var(--white); border-bottom: 2px solid var(--sand-mid); display: grid; grid-template-columns: repeat(4, 1fr); }
-.stat { padding: 16px; border-right: 2px solid var(--sand-mid); }
-.stat:last-child { border-right: none; }
-.stat-num { font-family: 'Nunito', sans-serif; font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 2px; letter-spacing: -0.03em; }
-.stat-bar-wrap { height: 5px; border-radius: 3px; background: var(--sand-mid); margin: 6px 0; overflow: hidden; }
-.stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-.stat-label { font-size: 11px; font-weight: 700; color: var(--ink-mid); line-height: 1.3; }
-.stat-ctx { font-size: 10px; color: var(--ink-light); margin-top: 2px; }
+#map {
+    height: 100vh;
+    width: 100%;
+}
 
-.main { display: flex; flex: 1; min-height: 500px; }
-
-.sidebar { width: 210px; min-width: 210px; background: var(--white); border-right: 2px solid var(--sand-mid); display: flex; flex-direction: column; padding: 14px; gap: 14px; overflow-y: auto; }
-.filter-label { font-size: 10px; font-weight: 700; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
-
-.toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--sand); border-radius: var(--radius-sm); padding: 9px 11px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s, background 0.15s; user-select: none; }
-.toggle-row.on { border-color: var(--teal); background: var(--teal-light); }
-.toggle-row-label { font-size: 12px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; }
-.toggle-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.tswitch { width: 32px; height: 18px; border-radius: 9px; background: var(--sand-mid); position: relative; transition: background 0.2s; flex-shrink: 0; }
-.tswitch.on { background: var(--teal); }
-.tswitch::after { content:''; position:absolute; width:12px; height:12px; border-radius:50%; background:white; top:3px; left:3px; transition:transform 0.2s; }
-.tswitch.on::after { transform:translateX(14px); }
-
-.arr-select { width: 100%; padding: 9px 11px; border-radius: var(--radius-sm); border: 2px solid var(--sand-mid); background: var(--sand); font-size: 12px; font-weight: 700; color: var(--ink); font-family: 'Nunito Sans', sans-serif; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A8680' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
-.arr-select:focus { outline: none; border-color: var(--teal); }
-
-.legend-box { background: var(--sand); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--ink-mid); }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-
-.mini-counts { display: flex; flex-direction: column; gap: 5px; }
-.mini-row { display: flex; justify-content: space-between; font-size: 12px; }
-.mini-lbl { color: var(--ink-light); font-weight: 600; }
-.mini-val { font-weight: 900; font-family: 'Nunito', sans-serif; }
-
-.disclaimer { background: var(--amber-light); border-radius: var(--radius-sm); padding: 9px 11px; border-left: 3px solid var(--amber); }
-.disclaimer-title { font-size: 11px; font-weight: 700; color: var(--amber); margin-bottom: 3px; }
-.disclaimer-text { font-size: 10px; color: #633806; line-height: 1.4; font-weight: 600; }
-
-.sidebar-footer { margin-top: auto; padding-top: 10px; border-top: 2px solid var(--sand-mid); font-size: 10px; color: var(--ink-light); line-height: 1.5; font-weight: 600; }
-.sidebar-footer a { color: var(--teal); font-weight: 700; text-decoration: none; }
-
-.map-wrap { flex: 1; position: relative; }
-#map { width: 100%; height: 100%; min-height: 500px; }
-.map-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #E8F4EE; gap: 10px; z-index: 10; }
-.loading-icon { width: 48px; height: 48px; background: var(--teal); border-radius: 14px; display: flex; align-items: center; justify-content: center; animation: pulse 1.2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
-.loading-title { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900; color: var(--teal-dark); }
-.loading-sub { font-size: 11px; color: #0F6E56; font-weight: 600; }
-.progress-wrap { width: 150px; height: 5px; background: #9FE1CB; border-radius: 3px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--teal); width: 0%; transition: width 0.3s; border-radius: 3px; }
-
-.panel { width: 250px; min-width: 250px; background: var(--white); border-left: 2px solid var(--sand-mid); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); position: relative; }
-.panel.open { transform: translateX(0); }
-.panel-close { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%; background: var(--sand); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--ink-mid); transition: background 0.15s; z-index: 2; }
-.panel-close:hover { background: var(--sand-mid); }
-.panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 24px 16px; text-align: center; gap: 10px; }
-.panel-empty-icon { opacity: 0.25; }
-.panel-empty-title { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900; color: var(--ink-mid); }
-.panel-empty-sub { font-size: 11px; color: var(--ink-light); font-weight: 600; }
-
-.panel-content { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
-.panel-head { padding: 16px 14px 12px; border-bottom: 2px solid var(--sand-mid); }
-.panel-type { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: var(--sand); color: var(--ink-mid); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.04em; }
-.panel-name { font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900; color: var(--ink); line-height: 1.2; margin-bottom: 3px; padding-right: 28px; }
-.panel-arr { font-size: 12px; color: var(--ink-light); font-weight: 600; }
-
-.dog-badge { margin: 12px 12px 0; border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
-.dog-badge.laisse { background: var(--teal-light); border: 2px solid #9FE1CB; }
-.dog-badge.canin { background: var(--purple-light); border: 2px solid var(--purple-mid); }
-.dog-badge.restreint { background: var(--amber-light); border: 2px solid #FAC775; }
-.dog-badge.voirie { background: #FFF3CD; border: 2px solid #FFE07A; }
-.dog-badge.interdit { background: var(--coral-light); border: 2px solid #F5C4B3; }
-.dog-badge-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
-.laisse .dog-badge-icon { background: #9FE1CB; }
-.canin .dog-badge-icon { background: var(--purple-mid); }
-.restreint .dog-badge-icon { background: #FAC775; }
-.voirie .dog-badge-icon { background: #FFE07A; }
-.interdit .dog-badge-icon { background: #F5C4B3; }
-.dog-badge-title { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900; margin-bottom: 2px; }
-.laisse .dog-badge-title { color: var(--teal-dark); }
-.canin .dog-badge-title { color: var(--purple-dark); }
-.restreint .dog-badge-title { color: #633806; }
-.voirie .dog-badge-title { color: #856404; }
-.interdit .dog-badge-title { color: var(--coral-dark); }
-.dog-badge-sub { font-size: 11px; font-weight: 600; }
-.laisse .dog-badge-sub { color: #0F6E56; }
-.canin .dog-badge-sub { color: #5B21B6; }
-.restreint .dog-badge-sub { color: var(--amber); }
-.voirie .dog-badge-sub { color: #856404; }
-.interdit .dog-badge-sub { color: #993C1D; }
-
-.panel-info { padding: 12px 14px; border-bottom: 2px solid var(--sand-mid); display: flex; flex-direction: column; gap: 8px; }
-.info-row { display: flex; justify-content: space-between; align-items: center; }
-.info-lbl { font-size: 11px; color: var(--ink-light); font-weight: 700; }
-.info-val { font-size: 12px; font-weight: 900; color: var(--ink); font-family: 'Nunito', sans-serif; }
-
-.vote-section { padding: 12px 12px; flex: 1; }
-.vote-lbl { font-size: 10px; font-weight: 700; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-.vote-btns { display: flex; flex-direction: column; gap: 6px; }
-.vote-btn { width: 100%; padding: 9px 12px; border-radius: 9px; border: 2px solid; font-size: 12px; font-weight: 700; cursor: pointer; text-align: left; font-family: 'Nunito Sans', sans-serif; transition: transform 0.1s; display: flex; align-items: center; gap: 7px; }
-.vote-btn:active { transform: scale(0.97); }
-.vote-btn.yes { background: var(--teal-light); border-color: #9FE1CB; color: var(--teal-dark); }
-.vote-btn.meh { background: var(--amber-light); border-color: #FAC775; color: var(--amber); }
-.vote-btn.no { background: var(--coral-light); border-color: #F5C4B3; color: var(--coral-dark); }
-.vote-feedback { margin-top: 8px; font-size: 11px; font-weight: 600; color: var(--ink-light); display: none; text-align: center; padding: 6px; background: var(--sand); border-radius: 8px; }
-.vote-feedback.show { display: block; }
-
-.report-btn { margin: 0 12px 12px; padding: 8px 12px; border-radius: 9px; border: 2px dashed var(--sand-mid); background: transparent; font-size: 11px; font-weight: 700; color: var(--ink-light); cursor: pointer; width: calc(100% - 24px); font-family: 'Nunito Sans', sans-serif; transition: border-color 0.15s, color 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.report-btn:hover { border-color: var(--amber); color: var(--amber); }
-.report-modal { display: none; position: absolute; inset: 0; background: rgba(250,247,242,0.96); z-index: 10; flex-direction: column; padding: 16px; gap: 10px; }
-.report-modal.show { display: flex; }
-.report-modal-title { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 900; color: var(--ink); }
-.report-modal-sub { font-size: 12px; color: var(--ink-light); font-weight: 600; line-height: 1.4; }
-.report-options { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.report-opt { padding: 10px 12px; border-radius: 9px; border: 2px solid var(--sand-mid); background: var(--sand); font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer; text-align: left; font-family: 'Nunito Sans', sans-serif; transition: border-color 0.15s; }
-.report-opt:hover { border-color: var(--amber); }
-.report-cancel { padding: 8px; font-size: 12px; font-weight: 700; color: var(--ink-light); cursor: pointer; background: none; border: none; font-family: 'Nunito Sans', sans-serif; }
-
-footer { background: var(--white); border-top: 2px solid var(--sand-mid); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--ink-light); font-weight: 600; }
-footer a { color: var(--teal); text-decoration: none; font-weight: 700; }
-
-.nav-tab { font-size: 12px; font-weight: 700; color: var(--ink-light); background: none; border: none; cursor: pointer; padding: 6px 12px; border-radius: 20px; font-family: 'Nunito Sans', sans-serif; transition: background 0.15s, color 0.15s; }
-.nav-tab:hover { color: var(--ink); background: var(--sand); }
-.nav-tab.active { background: var(--teal); color: white; }
-
-.view { display: none; }
-.view.active { display: block; }
-
-/* VUE MÉTHODE */
-.methode-wrap { max-width: 740px; margin: 0 auto; padding: 48px 32px 80px; }
-.m-kicker { font-size: 11px; font-weight: 700; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.m-kicker::before { content: ''; display: block; width: 20px; height: 2px; background: var(--teal); }
-.m-title { font-family: 'Nunito', sans-serif; font-size: 32px; font-weight: 900; color: var(--ink); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 16px; }
-.m-title em { color: var(--coral); font-style: italic; }
-.m-intro { font-size: 16px; color: var(--ink-mid); line-height: 1.75; margin-bottom: 48px; }
-.m-section { padding: 36px 0; border-top: 2px solid var(--sand-mid); }
-.m-section-num { font-family: 'Nunito', sans-serif; font-size: 56px; font-weight: 900; color: var(--sand-mid); line-height: 1; margin-bottom: -4px; letter-spacing: -0.04em; }
-.m-section-title { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900; color: var(--ink); margin-bottom: 16px; letter-spacing: -0.01em; }
-.m-body { font-size: 15px; color: var(--ink-mid); line-height: 1.8; }
-.m-body p { margin-bottom: 14px; }
-.m-body p:last-child { margin-bottom: 0; }
-.m-body strong { color: var(--ink); font-weight: 700; }
-.m-body a { color: var(--teal); font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; }
-.m-callout { margin: 20px 0; padding: 16px 20px; border-radius: 10px; border-left: 3px solid; }
-.m-callout-warn { background: var(--amber-light); border-color: var(--amber); }
-.m-callout-bad { background: var(--coral-light); border-color: var(--coral); }
-.m-callout-good { background: var(--teal-light); border-color: var(--teal); }
-.m-callout-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
-.m-callout-warn .m-callout-title { color: var(--amber); }
-.m-callout-bad .m-callout-title { color: var(--coral); }
-.m-callout-good .m-callout-title { color: var(--teal); }
-.m-callout-text { font-size: 14px; color: var(--ink-mid); line-height: 1.6; }
-.m-examples { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
-.m-ex { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 9px; border: 1px solid var(--sand-mid); font-size: 14px; line-height: 1.5; }
-.m-ex.bad { background: var(--coral-light); border-color: #F5C4B3; }
-.m-ex.warn { background: var(--amber-light); border-color: #FAC775; }
-.m-ex.good { background: var(--teal-light); border-color: #9FE1CB; }
-.m-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.04em; }
-.bad .m-badge { background: #F5C4B3; color: #712B13; }
-.warn .m-badge { background: #FAC775; color: #633806; }
-.good .m-badge { background: #9FE1CB; color: #085041; }
-.m-ex-text { color: var(--ink-mid); }
-.m-ex-text strong { color: var(--ink); font-weight: 700; }
-.m-sources { font-size: 13px; color: var(--ink-light); line-height: 2; }
-.m-sources a { color: var(--teal); font-weight: 600; text-decoration: none; }
-
-.leaflet-popup-content-wrapper { border-radius: 12px !important; border: 2px solid var(--sand-mid) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important; font-family: 'Nunito Sans', sans-serif !important; padding: 0 !important; overflow: hidden; }
-.leaflet-popup-content { margin: 0 !important; padding: 12px 14px !important; }
-.leaflet-popup-tip-container { display: none !important; }
-.popup-name { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900; color: var(--ink); margin-bottom: 3px; }
-.popup-arr { font-size: 11px; color: var(--ink-light); font-weight: 600; margin-bottom: 7px; }
-.popup-dog { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; text-transform: uppercase; }
-.popup-dog.laisse { background: var(--teal-light); color: var(--teal-dark); }
-.popup-dog.canin { background: var(--purple-light); color: var(--purple-dark); }
-.popup-dog.restreint { background: var(--amber-light); color: var(--amber); }
-.popup-dog.voirie { background: #FFF3CD; color: #856404; }
-.popup-dog.interdit { background: var(--coral-light); color: var(--coral-dark); }
+button {
+    width: 100%;
+    margin-top: 5px;
+    cursor: pointer;
+}
 </style>
 </head>
+
 <body>
 
-<nav>
-  <a href="#" class="logo">
-    <div class="logo-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-        <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/>
-        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>
-      </svg>
-    </div>
-    <span class="logo-text">parc<span>chien</span>.paris</span>
-  </a>
-  <div class="nav-right">
-    <button onclick="showView('map')" class="nav-tab active" id="tab-map">La carte</button>
-    <button onclick="showView('methode')" class="nav-tab" id="tab-methode">Notre méthode</button>
-    <span class="nav-date">Source paris.fr · màj 12/01/2026</span>
-  </div>
-</nav>
+<div id="dashboard">
+    <h3>🐕 Dog Map Paris</h3>
 
-<div id="view-map" class="view active">
-<div class="hero">
-  <div class="hero-eyebrow">Paris · tous arrondissements · données officielles Ville de Paris</div>
-  <div class="hero-headline">Seulement <span class="big">16%</span> des parcs parisiens ouverts aux chiens<span style="font-size:18px;vertical-align:super;cursor:pointer;color:var(--coral);" onclick="showView('methode')" title="Voir notre méthodologie">*</span></div>
-  <div class="hero-sub">Pour les 84% restants, ça vous coûtera l'amende — à la tête du client.</div>
+    <p>🟢 Dog friendly: <span id="countA">0</span></p>
+    <p>🟡 Semi friendly: <span id="countB">0</span></p>
+    <p>🔴 Not dog friendly: <span id="countC">0</span></p>
+
+    <hr>
+
+    <button onclick="toggle('A')">Toggle Dog Friendly</button>
+    <button onclick="toggle('B')">Toggle Semi</button>
+    <button onclick="toggle('C')">Toggle Not Friendly</button>
 </div>
 
-<div class="stats-bar">
-  <div class="stat">
-    <div class="stat-num" style="color:var(--ink-mid);" id="s-total">547</div>
-    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="background:var(--sand-mid);width:100%;"></div></div>
-    <div class="stat-label">espaces verts à Paris</div>
-    <div class="stat-ctx" id="ctx-total">parcs, jardins, squares</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num" style="color:var(--ink-light);" id="s-paris">165</div>
-    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="background:var(--sand-mid);width:30%;"></div></div>
-    <div class="stat-label">selon la Ville de Paris</div>
-    <div class="stat-ctx">chiffre officiel paris.fr</div>
-  </div>
-  <div class="stat" style="position:relative;">
-    <div style="display:flex;align-items:baseline;gap:4px;">
-      <div class="stat-num" style="color:var(--teal);" id="s-reel">~87</div>
-      <span style="font-size:16px;font-weight:900;color:var(--teal);cursor:pointer;" onclick="showView('methode')" title="Voir notre méthode">*</span>
-    </div>
-    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="background:var(--teal-mid);width:16%;"></div></div>
-    <div class="stat-label">vrais espaces ouverts aux chiens</div>
-    <div class="stat-ctx" style="color:var(--teal);cursor:pointer;text-decoration:underline;" onclick="showView('methode')">selon notre analyse →</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num" style="color:var(--coral);" id="s-pct">~16%</div>
-    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="background:var(--coral-mid);width:16%;"></div></div>
-    <div class="stat-label">des parcs accessibles aux chiens</div>
-    <div class="stat-ctx">Paris, championne de l'exclusion</div>
-  </div>
-</div>
+<div id="map"></div>
 
-<div class="main">
-  <div class="sidebar">
-    <div>
-      <div class="filter-label">Filtrer</div>
-      <div class="toggle-row on" id="tog-laisse" onclick="toggleFilter('laisse')">
-        <span class="toggle-row-label"><span class="toggle-dot" style="background:var(--teal);"></span>Autorisés en laisse</span>
-        <div class="tswitch on" id="sw-laisse"></div>
-      </div>
-    </div>
-    <div>
-      <div class="toggle-row on" id="tog-canin" onclick="toggleFilter('canin')">
-        <span class="toggle-row-label"><span class="toggle-dot" style="background:var(--purple);"></span>Espaces canins</span>
-        <div class="tswitch on" id="sw-canin"></div>
-      </div>
-    </div>
-    <div>
-      <div class="filter-label">Arrondissement</div>
-      <select class="arr-select" id="arr-sel" onchange="filterArr()">
-        <option value="">Tous les arrondissements</option>
-        <option value="1">Paris Centre (1er–4e)</option>
-        <option value="5">5e</option><option value="6">6e</option>
-        <option value="7">7e</option><option value="8">8e</option>
-        <option value="9">9e</option><option value="10">10e</option>
-        <option value="11">11e</option><option value="12">12e</option>
-        <option value="13">13e</option><option value="14">14e</option>
-        <option value="15">15e</option><option value="16">16e</option>
-        <option value="17">17e</option><option value="18">18e</option>
-        <option value="19">19e</option><option value="20">20e</option>
-      </select>
-    </div>
-
-    <div>
-      <div class="filter-label">Légende</div>
-      <div class="legend-box">
-        <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div>Chiens en laisse autorisés</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;"></div>Espace canin (sans laisse)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>Accès restreint (1 allée)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#F0997B;"></div>Voirie — pas un vrai parc</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#D85A30;"></div>Chiens interdits</div>
-      </div>
-    </div>
-
-    <div>
-      <div class="filter-label">Sur la carte</div>
-      <div class="mini-counts">
-        <div class="mini-row"><span class="mini-lbl">En laisse</span><span class="mini-val" style="color:var(--teal);" id="m-laisse">–</span></div>
-        <div class="mini-row"><span class="mini-lbl">Espaces canins</span><span class="mini-val" style="color:var(--purple);" id="m-canin">–</span></div>
-        <div class="mini-row"><span class="mini-lbl">Interdits</span><span class="mini-val" style="color:var(--coral);" id="m-interdit">–</span></div>
-        <div class="mini-row"><span class="mini-lbl" style="font-weight:700;">Total visible</span><span class="mini-val" id="m-total">–</span></div>
-      </div>
-    </div>
-
-    <div class="disclaimer">
-      <div class="disclaimer-title">⚠ Données à vérifier sur place</div>
-      <div class="disclaimer-text">Liste officielle paris.fr mise à jour le 12/01/2026. La Ville de Paris s'est engagée à ouvrir de nouveaux espaces. Vérifiez toujours la signalisation à l'entrée.</div>
-    </div>
-
-    <div class="sidebar-footer">
-      Source : <a href="https://www.paris.fr/pages/les-chiens-a-paris-33527" target="_blank">paris.fr/chiens-a-paris</a><br>
-      Carte : <a href="https://opendata.paris.fr" target="_blank">Open Data Paris</a> · Licence ODbL
-    </div>
-  </div>
-
-  <div class="map-wrap">
-    <div class="map-loading" id="map-loading">
-      <div class="loading-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/>
-          <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>
-        </svg>
-      </div>
-      <div class="loading-title">Chargement des parcs…</div>
-      <div class="loading-sub" id="load-sub">Connexion à Open Data Paris</div>
-      <div class="progress-wrap"><div class="progress-fill" id="prog" style="width: 20%;"></div></div>
-    </div>
-    <div id="map"></div>
-  </div>
-
-  <div class="panel" id="panel">
-    <button class="panel-close" onclick="closePanel()">✕</button>
-
-    <div class="panel-empty" id="panel-empty">
-      <div class="panel-empty-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/>
-          <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>
-        </svg>
-      </div>
-      <div class="panel-empty-title">Cliquez sur un parc</div>
-      <div class="panel-empty-sub">pour savoir si votre chien est le bienvenu</div>
-    </div>
-
-    <div class="panel-content" id="panel-content">
-      <div class="panel-head">
-        <div class="panel-type" id="p-type"></div>
-        <div class="panel-name" id="p-name"></div>
-        <div class="panel-arr" id="p-arr"></div>
-      </div>
-
-      <div class="dog-badge" id="p-dog">
-        <div class="dog-badge-icon" id="p-dog-icon"></div>
-        <div>
-          <div class="dog-badge-title" id="p-dog-title"></div>
-          <div class="dog-badge-sub" id="p-dog-sub"></div>
-        </div>
-      </div>
-
-      <div class="panel-info">
-        <div class="info-row">
-          <span class="info-lbl">Arrondissement</span>
-          <span class="info-val" id="p-arr-val"></span>
-        </div>
-        <div class="info-row">
-          <span class="info-lbl">Superficie</span>
-          <span class="info-val" id="p-surface"></span>
-        </div>
-        <div class="info-row" id="p-hours-row">
-          <span class="info-lbl">Catégorie d'Espace</span>
-          <span class="info-val" id="p-hours"></span>
-        </div>
-      </div>
-
-      <div class="vote-section">
-        <div class="vote-lbl">Votre verdict</div>
-        <div class="vote-btns">
-          <button class="vote-btn yes" onclick="vote('yes')">✓ Je reviendrai</button>
-          <button class="vote-btn meh" onclick="vote('meh')">– J'ai pas le choix</button>
-          <button class="vote-btn no" onclick="vote('no')">✕ Je ne reviendrai pas</button>
-        </div>
-        <div class="vote-feedback" id="vote-fb"></div>
-      </div>
-
-      <button class="report-btn" onclick="openReport()">⚑ Signaler une erreur</button>
-
-      <div class="report-modal" id="report-modal">
-        <div class="report-modal-title">Signaler une erreur</div>
-        <div class="report-modal-sub" id="report-park-name"></div>
-        <div class="report-options">
-          <button class="report-opt" onclick="submitReport('statut')">Le statut chien est incorrect</button>
-          <button class="report-opt" onclick="submitReport('ferme')">Ce parc est fermé / n'existe plus</button>
-          <button class="report-opt" onclick="submitReport('ouvert')">Ce parc accepte désormais les chiens</button>
-          <button class="report-opt" onclick="submitReport('info')">Les infos (surface, nom) sont fausses</button>
-        </div>
-        <button class="report-cancel" onclick="closeReport()">Annuler</button>
-      </div>
-    </div>
-  </div>
-</div>
-</div><!-- /view-map -->
-
-<div id="view-methode" class="view">
-  <div class="methode-wrap">
-    <div class="m-kicker">Transparence &amp; méthode</div>
-    <h1 class="m-title">Paris annonce 165 parcs.<br>La réalité, c'est <em>autre chose</em>.</h1>
-    <p class="m-intro">Ce dashboard est né d'une frustration simple : les chiffres officiels de la Ville de Paris sur l'accès des chiens aux espaces verts ne tiennent pas à l'examen. Voici comment on a vérifié, et ce qu'on a trouvé.</p>
-
-    <div class="m-section">
-      <div class="m-section-num">01</div>
-      <h2 class="m-section-title">Les données officielles</h2>
-      <div class="m-body">
-        <p>La Ville de Paris publie sur <strong>paris.fr</strong> une page intitulée "Les chiens à Paris", mise à jour le <strong>12 janvier 2026</strong>. Elle y annonce <strong>165 espaces verts accessibles aux chiens tenus en laisse</strong>, 45 espaces canins clos, et 3 espaces de liberté dans les bois de Boulogne et Vincennes.</p>
-        <p>Ces chiffres sont repris partout sans être vérifiés. Le dataset <strong>Open Data Paris "espaces_verts"</strong> (licence ODbL) fournit la géolocalisation et le type de chaque espace vert géré par la DEVE — mais ne contient <strong>aucun champ "chiens autorisés"</strong>. La classification repose donc entièrement sur la liste nominative de paris.fr.</p>
-      </div>
-      <div class="m-callout m-callout-warn">
-        <div class="m-callout-title">Limite importante</div>
-        <div class="m-callout-text">Nous n'avons pas visité physiquement chaque espace. Notre analyse est documentaire : elle croise la liste officielle avec des sources secondaires et une analyse des descriptions d'adresses.</div>
-      </div>
-    </div>
-
-    <div class="m-section">
-      <div class="m-section-num">02</div>
-      <h2 class="m-section-title">La règle officielle — et ce que paris.fr ne dit pas</h2>
-      <div class="m-body">
-        <p>Le règlement des parcs de la Ville de Paris (article 11) est clair : <strong>"l'accès des animaux de compagnie tenus en laisse est autorisé au sein des jardins ne comportant pas d'aires de jeux pour enfants et dans certains parcs signalés comme tels."</strong></p>
-        <p>Cette règle a une logique asymétrique que paris.fr ne mentionne jamais :</p>
-        <p>→ <strong>Présence d'une aire de jeux = chiens interdits.</strong> Règle absolue.<br>
-        → <strong>Absence d'aire de jeux ≠ chiens autorisés.</strong> L'absence ne garantit rien. Un parc peut interdire les chiens pour d'autres raisons. La réciprocité n'existe pas.</p>
-      </div>
-    </div>
-
-    <div class="m-section">
-      <div class="m-section-num">03</div>
-      <h2 class="m-section-title">Ce que paris.fr glisse dans ses 165</h2>
-      <div class="m-body">
-        <p>Pour gonfler artificiellement ses chiffres de tolérance, la Ville de Paris comptabilise des aménagements de voirie ou des espaces ultra-restreints qui n'ont rien de véritables havres de verdure pour les animaux :</p>
-      </div>
-      <div class="m-examples">
-        <div class="m-ex bad">
-          <span class="m-badge">Voirie</span>
-          <div class="m-ex-text"><strong>Promenade de l'avenue de Breteuil ou Coulée Verte :</strong> Des morceaux de trottoirs, des îlots de circulation bitumés ou des allées publiques. Ce sont des espaces de circulation urbaine, pas de vrais parcs clos à l'abri des pots d'échappement.</div>
-        </div>
-        <div class="m-ex warn">
-          <span class="m-badge">Accès Restreint</span>
-          <div class="m-ex-text"><strong>Parc des Buttes-Chaumont ou Parc Monceau :</strong> Le parc entier est strictement interdit aux chiens, à l'exception d'une ou deux allées asphaltées bien précises (généralement en périphérie). Un pas de côté sur la pelouse, et vous risquez l'amende.</div>
-        </div>
-        <div class="m-ex good">
-          <span class="m-badge">En Laisse</span>
-          <div class="m-ex-text"><strong>Parc Montsouris :</strong> Un exemple de vrai grand parc historique où le chien en laisse est le bienvenu sur l'intégralité des allées principales, permettant de réelles promenades.</div>
-        </div>
-      </div>
-      <div class="m-body">
-        <p>En nettoyant ces artifices statistiques, les ~165 parcs fondent pour atteindre à peine <strong>87 vrais espaces verts</strong> réellement praticables, soit environ 16% de l'offre totale parisienne. Une situation qui pousse les propriétaires à l'infraction permanente ou à la frustration.</p>
-      </div>
-    </div>
-  </div>
-</div><!-- /view-methode -->
-
-<footer>
-  <div>© 2026 ParcChien.paris · Données transparentes pour les parisiens et leurs compagnons</div>
-  <div>Fait avec passion 🐾</div>
-</footer>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// --- DONNÉES DU TABLEAU DE BORD ---
-const myDogParks = [
-  {"nom": "Jardin Nelson Mandela", "arrondissement": 1, "statut": "canin", "note": "Espace canin officiel clos"},
-  {"nom": "Square du Vert-Galant", "arrondissement": 1, "statut": "laisse"},
-  {"nom": "Square de la place Dauphine", "arrondissement": 1, "statut": "laisse"},
-  {"nom": "Square Georges Caïn", "arrondissement": 3, "statut": "laisse"},
-  {"nom": "Jardin de la Place Jean-Paul II", "arrondissement": 4, "statut": "laisse"},
-  {"nom": "Square Marie Trintignant", "arrondissement": 4, "statut": "laisse"},
-  {"nom": "Jardin Teilhard de Chardin", "arrondissement": 4, "statut": "laisse"},
-  {"nom": "Square René Viviani", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Square Samuel Paty", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Square Marius Constant", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Jardin Tino Rossi", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Square Danielle Mitterrand", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Squares Auguste Mariette-Pacha et Michel Foucault", "arrondissement": 5, "statut": "laisse"},
-  {"nom": "Parc du Champ-de-Mars", "arrondissement": 7, "statut": "voirie", "note": "Espace ouvert sans grille — allées cavalières sur voirie"},
-  {"nom": "Esplanade des Invalides", "arrondissement": 7, "statut": "voirie", "note": "Espace ouvert sur voirie sans grille ni entrée"},
-  {"nom": "Esplanade Habib Bourguiba", "arrondissement": 7, "statut": "voirie", "note": "Quai d'Orsay — espace ouvert sur voirie"},
-  {"nom": "Promenade de l'avenue de Breteuil", "arrondissement": 7, "statut": "voirie", "note": "Avenue publique bordée de platanes"},
-  {"nom": "Parc Monceau", "arrondissement": 8, "statut": "restreint", "note": "Allée Ferdousi et allée Comtesse de Ségur uniquement"},
-  {"nom": "Promenade du Cours Albert 1er", "arrondissement": 8, "statut": "voirie", "note": "Allées le long des quais de Seine"},
-  {"nom": "Promenade du Cours la Reine", "arrondissement": 8, "statut": "voirie", "note": "Quais de Seine ouverts sans grille"},
-  {"nom": "Jardin des Champs-Élysées", "arrondissement": 8, "statut": "restreint", "note": "Allées cavalières uniquement"},
-  {"nom": "Jardin des abords du Petit Palais", "arrondissement": 8, "statut": "laisse"},
-  {"nom": "Jardin de la Mairie du 8e", "arrondissement": 8, "statut": "laisse"},
-  {"nom": "Jardin Cromot du Bourg - Cour Cadet", "arrondissement": 9, "statut": "laisse"},
-  {"nom": "Square Frédérick Lemaître", "arrondissement": 10, "statut": "canin", "note": "Espace canin officiel"},
-  {"nom": "Jardin de Marianne", "arrondissement": 11, "statut": "laisse"},
-  {"nom": "Square des Moines de Tibhirine", "arrondissement": 11, "statut": "laisse"},
-  {"nom": "Square de la Place Pasdeloup", "arrondissement": 11, "statut": "laisse", "note": "Ouvert aux chiens depuis décembre 2025"},
-  {"nom": "Square Georges Sarre", "arrondissement": 11, "statut": "restreint", "note": "Aire de repos uniquement"},
-  {"nom": "Square Louis Majorelle", "arrondissement": 11, "statut": "interdit", "note": "Listé par paris.fr mais chiens interdits — bac à sable présent"},
-  {"nom": "Mail Pierre Desproges", "arrondissement": 11, "statut": "voirie", "note": "Portion de la rue de la Roquette — voie publique"},
-  {"nom": "Parc de Bercy", "arrondissement": 12, "statut": "laisse", "note": "Ouvert aux chiens depuis décembre 2025"},
-  {"nom": "Square Albert Tournaire", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Square Georges Méliès", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Coulée verte René Dumont", "arrondissement": 12, "statut": "voirie", "note": "Voie ferrée surélevée — espace linéaire ouvert"},
-  {"nom": "Jardin Hector Malot", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Square Fernand Foureau", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Jardin de l'impératrice Eugénie", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Square Courteline", "arrondissement": 12, "statut": "voirie", "note": "Terre-plein central boulevard de Picpus"},
-  {"nom": "Jardin Françoise Giroud", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Square Marie Curie", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Square de l'Avenue Caffiéri", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin Michelet", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin Federica Montseny", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin Paul Nizan", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin Biopark", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin de la Place Souham", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin du monument aux Mères Françaises", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin de la Poterne des Peupliers", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Square René Le Gall", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Jardin Françoise Mallet-Joris", "arrondissement": 13, "statut": "laisse"},
-  {"nom": "Parc Montsouris", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square de l'Abbé Migne", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square Julia Bartet", "arrondissement": 14, "statut": "interdit", "note": "Aire de jeux présente"},
-  {"nom": "Square Paturle", "arrondissement": 14, "statut": "interdit", "note": "Aire de jeux présente"},
-  {"nom": "Jardin de la Place Louise Losserand", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square Henri et Achille Duchêne", "arrondissement": 14, "statut": "interdit", "note": "Aire de jeux présente"},
-  {"nom": "Jardin du Cloître", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square aux Artistes", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square de l'Abbé Lemire", "arrondissement": 14, "statut": "interdit", "note": "Aire de jeux présente"},
-  {"nom": "Jardin de l'Observatoire de Paris", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square Jules Durand", "arrondissement": 14, "statut": "laisse"},
-  {"nom": "Square de la place Étienne-Pernet", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Square Carlo Sarrabezolles", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Square des Périchaux", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Allée des Cygnes", "arrondissement": 15, "statut": "voirie", "note": "Chemin ouvert sur île artificielle dans la Seine"},
-  {"nom": "Square Pau Casals", "arrondissement": 15, "statut": "restreint", "note": "Allée centrale uniquement"},
-  {"nom": "Square Belà Bartók", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Promenade Khalil Gibran", "arrondissement": 15, "statut": "voirie", "note": "Quai André Citroën — espace ouvert sur voirie"},
-  {"nom": "Jardin des Mères et Grands-Mères de la Place de Mai", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Jardin Élisabeth Boselli", "arrondissement": 15, "statut": "laisse"},
-  {"nom": "Jardin d'immeubles Albert Bartholomé", "arrondissement": 15, "statut": "voirie", "note": "Desserte d'immeubles sur voirie"},
-  {"nom": "Jardin du Ranelagh", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Jardin de l'Avenue-Foch", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Jardins du Trocadéro", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Jardin de la Porte de Saint-Cloud", "arrondissement": 16, "statut": "restreint", "note": "Interdit à proximité de l'aire de jeux"},
-  {"nom": "Square Robert Schumann", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Square Anna de Noailles", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Square Alexandre et René Parodi", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Jardin de l'Église Sainte-Jeanne de Chantal", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Square du Tchad", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Jardins de l'avenue Dode de la Brunerie", "arrondissement": 16, "statut": "canin", "note": "Espace canin uniquement"},
-  {"nom": "Parc Sainte-Périne", "arrondissement": 16, "statut": "restreint", "note": "Bordure seulement entre accès rue Mirabeau et avenue de Versailles"},
-  {"nom": "Square Albert Besnard", "arrondissement": 17, "statut": "laisse"},
-  {"nom": "Promenade Bernard Lafay", "arrondissement": 17, "statut": "voirie", "note": "Deux îlots asphaltés sur voirie"},
-  {"nom": "Jardin Marguerite Long", "arrondissement": 17, "statut": "laisse"},
-  {"nom": "Square Auguste Balagny", "arrondissement": 17, "statut": "laisse"},
-  {"nom": "Square des Batignolles", "arrondissement": 17, "statut": "interdit", "note": "Aires de jeux présentes"},
-  {"nom": "Square Nadar", "arrondissement": 18, "statut": "laisse"},
-  {"nom": "Square Claude Charpentier", "arrondissement": 18, "statut": "laisse"},
-  {"nom": "Square Raymond Souplex", "arrondissement": 18, "statut": "laisse"},
-  {"nom": "Square Louise de Marillac", "arrondissement": 18, "statut": "laisse"},
-  {"nom": "Parc des Buttes-Chaumont", "arrondissement": 19, "statut": "restreint", "note": "Allées périphériques uniquement"},
-  {"nom": "Square de la Porte de la Villette", "arrondissement": 19, "statut": "laisse"},
-  {"nom": "Promenade Amalia Rodrigues", "arrondissement": 19, "statut": "voirie", "note": "Promenade sur voirie ouverte"},
-  {"nom": "Jardin de l'Ilot Riquet", "arrondissement": 19, "statut": "laisse"},
-  {"nom": "Jardin de l'Ilot Rébeval", "arrondissement": 19, "statut": "laisse"},
-  {"nom": "Jardin de Notre-Dame-de-Fatima", "arrondissement": 19, "statut": "laisse"},
-  {"nom": "Mail Émile Bollaert", "arrondissement": 19, "statut": "voirie", "note": "Surfaces minérales sur voirie"},
-  {"nom": "Jardin Anaïs Nin", "arrondissement": 19, "statut": "laisse"},
-  {"nom": "Forêt linéaire Sud", "arrondissement": 19, "statut": "voirie", "note": "Espace sur voirie végétalisée"},
-  {"nom": "Forêt linéaire Nord", "arrondissement": 19, "statut": "voirie", "note": "Espace sur voirie végétalisée"},
-  {"nom": "Jardin d'immeubles de la Rue de la Marseillaise", "arrondissement": 19, "statut": "voirie"},
-  {"nom": "Jardin Samuel de Champlain", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Square Henri Karcher", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Square Alexandre Luquet", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Square Élisa Borey", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Jardin Maronites-Pressoir", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Jardin de la Justice", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Square Benoît Frachon", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Jardin de Vitaly", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Jardin des Oiseaux", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Square Janis Joplin", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Jardinet de l'église Saint-Germain de Charonne", "arrondissement": 20, "statut": "laisse"},
-  {"nom": "Bois de Boulogne", "arrondissement": 16, "statut": "laisse"},
-  {"nom": "Bois de Vincennes", "arrondissement": 12, "statut": "laisse"},
-  {"nom": "Parc de la Villette", "arrondissement": 19, "statut": "voirie", "note": "Autorisés sur surfaces minérales et voirie interne uniquement"},
-  {"nom": "Jardin du Luxembourg", "arrondissement": 6, "statut": "interdit"},
-  {"nom": "Jardin des Tuileries", "arrondissement": 1, "statut": "interdit"},
-  {"nom": "Jardin des Plantes", "arrondissement": 5, "statut": "interdit"},
-  {"nom": "Parc André Citroën", "arrondissement": 15, "statut": "interdit"},
-  {"nom": "Parc Floral de Paris", "arrondissement": 12, "statut": "interdit"},
-  {"nom": "Jardin du Palais Royal", "arrondissement": 1, "statut": "interdit"},
-  {"nom": "Jardin de Bagatelle", "arrondissement": 16, "statut": "interdit"},
-  {"nom": "Parc de Belleville", "arrondissement": 20, "statut": "interdit"},
-  {"nom": "Parc Georges Brassens", "arrondissement": 15, "statut": "interdit"}
-];
 
-// --- ÉTAT GLOBAL ---
-let map;
-let allMarkers = [];
-let filters = {
-  laisse: true,  // Gère laisse, restreint, voirie
-  canin: true    // Gère canin
-};
-let selectedArrondissement = "";
-let selectedParkData = null;
+// ---------------- MAP ----------------
+const map = L.map('map').setView([48.8566, 2.3522], 12);
 
-// Spécificités esthétiques des marqueurs
-const statusStyles = {
-  laisse: { color: "#1D9E75", title: "En Laisse", sub: "Chiens autorisés sur les allées" },
-  canin: { color: "#7C3AED", title: "Espace Canin", sub: "Parc ou enclos sans laisse officiel" },
-  restreint: { color: "#BA7517", title: "Accès Restreint", sub: "Seules certaines allées tolérées" },
-  voirie: { color: "#F0997B", title: "Voirie publique", sub: "Espace ouvert type trottoir / terre-plein" },
-  interdit: { color: "#D85A30", title: "Interdit", sub: "Chiens strictement interdits" }
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// ---------------- LAYERS ----------------
+const layers = {
+    A: L.layerGroup().addTo(map),
+    B: L.layerGroup().addTo(map),
+    C: L.layerGroup().addTo(map)
 };
 
-// --- INITIALISATION DE LA CARTE ---
-function initMap() {
-  map = L.map('map', {
-    zoomControl: true
-  }).setView([48.8566, 2.3522], 12);
+// ---------------- STRICT TAXONOMY ----------------
+function classify(p) {
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors © CARTO'
-  }).addTo(map);
+    const isRoad = p.type === "voirie" || p.type === "terre_plein" || p.type === "mail";
+    const hasPlayground = p.aire_de_jeux === true;
+    const hasDogZone = p.zone_canin === true;
+    const restricted = p.restrictions_fortes === true;
+    const allowed = p.chien_autorise === true;
+
+    // 🔴 RULE 1: playground = ALWAYS NOT DOG FRIENDLY
+    if (hasPlayground) return "C";
+
+    // 🔴 RULE 2: road / decorative spaces
+    if (isRoad) return "C";
+
+    // 🟡 RULE 3: constrained spaces
+    if (restricted) return "B";
+
+    // 🟢 RULE 4: dog allowed or dog zone
+    if (allowed || hasDogZone) return "A";
+
+    // 🔴 default fallback
+    return "C";
 }
 
-// --- NORMALISATION DES NOMS POUR LE CROISEMENT ---
-function normalizeName(str) {
-  if (!str) return "";
-  return str.toLowerCase()
-    .normalize("NFD").replace(/[̀-ͯ]/g, "") // Supprime les accents
-    .replace(/[-_']/g, " ")                           // Remplace tirets/apostrophes par espaces
-    .replace(/square|jardin|parc|promenade|mail/g, "") // Enlève les préfixes fréquents
-    .trim();
+// ---------------- COLORS ----------------
+function color(cat) {
+    return {
+        A: "#2ecc71",
+        B: "#f39c12",
+        C: "#e74c3c"
+    }[cat];
 }
 
-// --- CHARGEMENT DYNAMIQUE DE L'API OPEN DATA PARIS ---
-async function fetchGeometriesAndMerge() {
-  const progressFill = document.getElementById('prog');
-  const loadSub = document.getElementById('load-sub');
-  
-  try {
-    loadSub.innerText = "Appel de l'API Open Data Paris...";
-    progressFill.style.width = "40%";
+// ---------------- DATA FETCH ----------------
+fetch("https://opendata.paris.fr/api/records/1.0/search/?dataset=espaces_verts&rows=5000")
+.then(r => r.json())
+.then(data => {
 
-   // Utilisation de l'endpoint d'export pour contourner la limite de 100 résultats
-    const url = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/espaces_verts/exports/json";
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Erreur réseau API");
-    
-    // L'export renvoie directement le tableau des parcs (plus besoin de data.results)
-    const officialParks = await response.json();
-    
-    progressFill.style.width = "70%";
-    loadSub.innerText = "Fusion des bases de données documentaires...";
+    data.records.forEach(r => {
 
-    // Traitement et croisement
-    myDogParks.forEach(customPark => {
-      const cleanCustom = normalizeName(customPark.nom);
-      
-      // Recherche de correspondance de nom
-      let match = officialParks.find(off => normalizeName(off.nom_ev) === cleanCustom);
-      
-      // Fallback si correspondance imparfaite (ex: inclusion partielle)
-      if (!match) {
-        match = officialParks.find(off => normalizeName(off.nom_ev).includes(cleanCustom) || cleanCustom.includes(normalizeName(off.nom_ev)));
-      }
+        if (!r.geometry) return;
 
-      let lat, lng, surface = "Non renseignée", typeEv = "Espace Vert";
-      
-      if (match && match.geo_point_2d) {
-        lat = match.geo_point_2d.lat;
-        lng = match.geo_point_2d.lon;
-        if (match.surface) surface = Math.round(match.surface).toLocaleString('fr-FR') + " m²";
-        if (match.type_ev) typeEv = match.type_ev;
-      } else {
-        // Coordonnées de secours génériques par arrondissement parisien pour éviter de perdre le point
-        const fallbacks = {
-          1: [48.8624, 2.3448], 3: [48.8621, 2.3601], 4: [48.8543, 2.3550], 5: [48.8448, 2.3512],
-          6: [48.8490, 2.3331], 7: [48.8560, 2.3126], 8: [48.8725, 2.3084], 9: [48.8770, 2.3374],
-          10: [48.8761, 2.3603], 11: [48.8593, 2.3789], 12: [48.8351, 2.3923], 13: [48.8283, 2.3615],
-          14: [48.8296, 2.3270], 15: [48.8412, 2.2933], 16: [48.8604, 2.2618], 17: [48.8835, 2.3219],
-          18: [48.8913, 2.3431], 19: [48.8827, 2.3821], 20: [48.8632, 2.4008]
-        };
-        const coords = fallbacks[customPark.arrondissement] || [48.8566, 2.3522];
-        lat = coords[0] + (Math.random() - 0.5) * 0.006; // Légère dispersion pour l'affichage si doublons
-        lng = coords[1] + (Math.random() - 0.5) * 0.006;
-        if (customPark.nom.includes("Bois")) surface = "Plus de 8 000 000 m²";
-      }
+        const p = r.fields;
+        const cat = classify(p);
 
-      // Création graphique du marqueur Leaflet (Cercle stylisé)
-      const style = statusStyles[customPark.statut];
-      const marker = L.circleMarker([lat, lng], {
-        radius: 8,
-        fillColor: style.color,
-        color: "#ffffff",
-        weight: 2,
-        fillOpacity: 0.9
-      });
+        const coords = [
+            r.geometry.coordinates[1],
+            r.geometry.coordinates[0]
+        ];
 
-      // Construction de l'infobulle (Popup) au clic sur la carte
-      const popupHtml = `
-        <div class="popup-name">${customPark.nom}</div>
-        <div class="popup-arr">${customPark.arrondissement === 1 ? 'Paris Centre' : customPark.arrondissement + 'e arr.'}</div>
-        <div class="popup-dog ${customPark.statut}">${style.title}</div>
-      `;
-      marker.bindPopup(popupHtml);
+        const marker = L.circleMarker(coords, {
+            radius: 5,
+            color: color(cat),
+            fillColor: color(cat),
+            fillOpacity: 0.75
+        });
 
-      // Événement d'ouverture du volet latéral droit
-      marker.on('click', () => {
-        openPanel(customPark, surface, typeEv);
-      });
+        marker.bindPopup(`
+            <b>${p.nom || "Sans nom"}</b><br>
+            Catégorie : ${cat}
+        `);
 
-      // Stockage de l'objet complet pour manipulation par filtres
-      allMarkers.push({
-        marker: marker,
-        data: customPark,
-        geoInfo: { surface: surface, typeEv: typeEv }
-      });
+        layers[cat].addLayer(marker);
     });
 
-    progressFill.style.width = "100%";
-    setTimeout(() => {
-      document.getElementById('map-loading').style.display = 'none';
-      applyFiltersAndRender();
-    }, 400);
+    updateStats();
+});
 
-  } catch (error) {
-    console.error(error);
-    loadSub.innerHTML = "<span style='color:var(--coral);'>Erreur de chargement des données de la Ville.</span>";
-  }
+// ---------------- DASHBOARD ----------------
+function updateStats() {
+    document.getElementById("countA").innerText = layers.A.getLayers().length;
+    document.getElementById("countB").innerText = layers.B.getLayers().length;
+    document.getElementById("countC").innerText = layers.C.getLayers().length;
 }
 
-// --- LOGIQUE INTERACTIVE DES FILTRES ---
-function toggleFilter(type) {
-  filters[type] = !filters[type];
-  const row = document.getElementById(`tog-${type}`);
-  const sw = document.getElementById(`sw-${type}`);
-  
-  if (filters[type]) {
-    row.classList.add('on');
-    sw.classList.add('on');
-  } else {
-    row.classList.remove('on');
-    sw.classList.remove('on');
-  }
-  applyFiltersAndRender();
-}
-
-function filterArr() {
-  selectedArrondissement = document.getElementById('arr-sel').value;
-  applyFiltersAndRender();
-}
-
-// Actualisation de l'affichage géographique et des compteurs de la barre latérale
-function applyFiltersAndRender() {
-  let countLaisse = 0;
-  let countCanin = 0;
-  let countInterdit = 0;
-  let countTotalVisible = 0;
-
-  allMarkers.forEach(item => {
-    const stat = item.data.statut;
-    const arr = item.data.arrondissement;
-    
-    let showByStatus = false;
-    // Le filtre "Laisse" englobe l'autorisation en laisse classique, mais aussi les ruses "restreint" et "voirie"
-    if (filters.laisse && (stat === 'laisse' || stat === 'restreint' || stat === 'voirie')) showByStatus = true;
-    if (filters.canin && stat === 'canin') showByStatus = true;
-    // Les parcs interdits s'affichent par défaut pour appuyer le propos d'exclusion de l'application
-    if (stat === 'interdit') showByStatus = true;
-
-    // Filtre de secteur (arrondissement)
-    let showByArr = true;
-    if (selectedArrondissement !== "") {
-      // Zone 1 regroupe historiquement 1, 2, 3, 4
-      if (selectedArrondissement === "1") {
-        showByArr = (arr >= 1 && arr <= 4);
-      } else {
-        showByArr = (arr === parseInt(selectedArrondissement));
-      }
-    }
-
-    // Décision finale d'affichage
-    if (showByStatus && showByArr) {
-      item.marker.addTo(map);
-      countTotalVisible++;
-      if (stat === 'laisse' || stat === 'restreint' || stat === 'voirie') countLaisse++;
-      if (stat === 'canin') countCanin++;
-      if (stat === 'interdit') countInterdit++;
+// ---------------- TOGGLE ----------------
+function toggle(cat) {
+    if (map.hasLayer(layers[cat])) {
+        map.removeLayer(layers[cat]);
     } else {
-      item.marker.remove(map);
+        map.addLayer(layers[cat]);
     }
-  });
-
-  // Mise à jour des petits compteurs de la barre latérale
-  document.getElementById('m-laisse').innerText = countLaisse;
-  document.getElementById('m-canin').innerText = countCanin;
-  document.getElementById('m-interdit').innerText = countInterdit;
-  document.getElementById('m-total').innerText = countTotalVisible;
 }
 
-// --- GESTION DU PANNEAU LATÉRAL (Fiche descriptive du parc) ---
-function openPanel(park, surface, typeEv) {
-  selectedParkData = park;
-  document.getElementById('panel-empty').style.display = 'none';
-  const content = document.getElementById('panel-content');
-  content.style.display = 'flex';
-  document.getElementById('panel').classList.add('open');
-
-  // Remplissage des données textuelles
-  document.getElementById('p-type').innerText = typeEv;
-  document.getElementById('p-name').innerText = park.nom;
-  document.getElementById('p-arr').innerText = park.arrondissement === 1 ? 'Paris Centre (1er-4e)' : park.arrondissement + 'e arrondissement';
-  document.getElementById('p-arr-val').innerText = park.arrondissement + (park.arrondissement === 1 ? 'er' : 'e');
-  document.getElementById('p-surface').innerText = surface;
-  document.getElementById('p-hours').innerText = typeEv;
-
-  // Ajustement du badge chien selon la méthodologie protectrice
-  const style = statusStyles[park.statut];
-  const dogBadge = document.getElementById('p-dog');
-  
-  // Reset de la classe
-  dogBadge.className = "dog-badge " + park.statut;
-  document.getElementById('p-dog-icon').innerText = park.statut === 'interdit' ? '✕' : '🐾';
-  document.getElementById('p-dog-title').innerText = style.title;
-  document.getElementById('p-dog-sub').innerText = park.note ? park.note : style.sub;
-
-  // Reset des retours formulaires
-  document.getElementById('vote-fb').classList.remove('show');
-  closeReport();
-}
-
-function closePanel() {
-  document.getElementById('panel').classList.remove('open');
-  setTimeout(() => {
-    document.getElementById('panel-empty').style.display = 'flex';
-    document.getElementById('panel-content').style.display = 'none';
-  }, 300);
-}
-
-// --- INTERACTIONS FORMULAIRES SIMULÉES ---
-function vote(type) {
-  const fb = document.getElementById('vote-fb');
-  fb.classList.add('show');
-  if (type === 'yes') fb.innerText = "Vote enregistré ! Merci pour votre retour positif.";
-  if (type === 'meh') fb.innerText = "Vote pris en compte. L'infrastructure parisienne doit s'améliorer !";
-  if (type === 'no') fb.innerText = "Signalé ! Les parcs de la capitale manquent cruellement d'équipements.";
-}
-
-function openReport() {
-  if (!selectedParkData) return;
-  document.getElementById('report-park-name').innerText = selectedParkData.nom;
-  document.getElementById('report-modal').classList.add('show');
-}
-
-function closeReport() {
-  document.getElementById('report-modal').classList.remove('show');
-}
-
-function submitReport(reason) {
-  closeReport();
-  const fb = document.getElementById('vote-fb');
-  fb.classList.add('show');
-  fb.innerText = "Félicitations pour votre engagement ! Le signalement a été transmis à notre équipe de modération documentaire.";
-}
-
-// --- LOGIQUE DES ONGLETS DE NAVIGATION ---
-function showView(viewId) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  
-  document.getElementById(`view-${viewId}`).classList.add('active');
-  document.getElementById(`tab-${viewId}`).classList.add('active');
-
-  // Leaflet a besoin d'être recalculé si la carte était masquée au démarrage
-  if (viewId === 'map' && map) {
-    setTimeout(() => { map.invalidateSize(); }, 50);
-  }
-}
-
-// --- LANCEMENT AUTOMATIQUE ---
-window.onload = () => {
-  initMap();
-  fetchGeometriesAndMerge();
-};
 </script>
+
 </body>
 </html>
