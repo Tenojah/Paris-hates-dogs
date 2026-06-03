@@ -664,13 +664,13 @@ async function fetchGeometriesAndMerge() {
     loadSub.innerText = "Appel de l'API Open Data Paris...";
     progressFill.style.width = "40%";
 
-    // Appel de l'API v2.1 (on prend une limite haute de 1000 pour récupérer tous les parcs de Paris)
-    const url = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/espaces_verts/records?limit=1000";
+   // Utilisation de l'endpoint d'export pour contourner la limite de 100 résultats
+    const url = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/espaces_verts/exports/json";
     const response = await fetch(url);
     if (!response.ok) throw new Error("Erreur réseau API");
     
-    const data = await response.json();
-    const officialParks = data.results || [];
+    // L'export renvoie directement le tableau des parcs (plus besoin de data.results)
+    const officialParks = await response.json();
     
     progressFill.style.width = "70%";
     loadSub.innerText = "Fusion des bases de données documentaires...";
