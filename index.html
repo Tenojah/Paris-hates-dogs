@@ -146,82 +146,88 @@
   .map-view.hidden{display:none}
 
   /* ── MOBILE ── */
-  .filter-bar-mobile{display:none}
-  .bottom-sheet{display:none}
+  .bottom-sheet{
+    display:none;position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-radius:16px 16px 0 0;
+    border-top:1px solid var(--cream-border);
+    padding:12px 16px 40px;z-index:2000;
+    max-height:80vh;overflow-y:auto;
+  }
+  .bottom-sheet.open{display:block}
+  .bs-handle{width:36px;height:4px;border-radius:2px;background:var(--cream-border);margin:0 auto 12px;cursor:pointer}
+  .bs-close{position:absolute;top:12px;right:16px;font-size:20px;color:var(--ink-light);cursor:pointer;background:none;border:none;line-height:1}
+
+  .m-filterbar{display:none}
+  .m-list{display:none}
   @media(max-width:768px){
+    html,body{overflow:auto;height:auto}
+    .app{height:auto;overflow:visible}
+    .topbar{padding:0 14px;height:48px;position:sticky;top:0;z-index:1000;background:var(--cream)}
+    .topbar-meta{display:none}
+    .logo{font-size:17px}
+    .ntab{padding:5px 10px;font-size:11px}
     .hero{display:none}
     .stats-row{display:none}
+    .body{flex-direction:column;overflow:visible;height:auto;flex:none}
     .sidebar{display:none}
     .detail-panel{display:none}
     .bottombar{display:none}
-    .topbar-meta{display:none}
-    .topbar{padding:0 12px;height:48px}
-    .logo{font-size:17px}
-    .ntab{padding:5px 10px;font-size:11px}
-    .map-view{flex:1;min-height:0}
-    .map-wrap{flex:1;position:relative}
-    #map{position:absolute;inset:0;height:100%!important}
+    .map-view{flex-direction:column;flex:none;height:auto}
+    .map-wrap{height:52vw;min-height:220px;max-height:320px;flex:none;position:relative;order:2}
+    #map{width:100%;height:100%}
+    .m-filterbar{display:flex}
+    .m-list{display:flex}
 
-    .filter-bar-mobile{
-      display:flex;
-      position:absolute;
-      top:10px;left:10px;right:10px;
-      z-index:500;
-      gap:6px;
-      pointer-events:none;
+    /* Mobile filter bar */
+    .m-filterbar{
+      display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+      padding:10px 14px;background:var(--cream);
+      border-bottom:1px solid var(--cream-border);
+      position:sticky;top:48px;z-index:900;order:1;
     }
-    .filter-bar-mobile .fm-pill{
-      pointer-events:all;
+    .mf-pill{
       display:flex;align-items:center;gap:5px;
-      padding:6px 10px;
-      border-radius:20px;
-      font-size:11px;font-weight:500;
-      background:#fff;
-      border:1px solid var(--cream-border);
-      color:var(--ink-mid);
-      cursor:pointer;
-      white-space:nowrap;
-      box-shadow:0 2px 8px rgba(0,0,0,.1);
-      transition:all .12s;
+      padding:6px 11px;border-radius:20px;font-size:12px;font-weight:500;
+      background:#fff;border:1px solid var(--cream-border);
+      color:var(--ink-mid);cursor:pointer;white-space:nowrap;
+      transition:all .12s;user-select:none;
     }
-    .filter-bar-mobile .fm-pill.on{color:var(--ink);border-color:var(--ink-mid)}
-    .filter-bar-mobile .fm-pill.off{opacity:.45}
-
-    .arr-float{
-      pointer-events:all;
-      display:flex;align-items:center;gap:5px;
-      padding:6px 10px;
-      border-radius:20px;
-      font-size:11px;font-weight:500;
-      background:#fff;
-      border:1px solid var(--cream-border);
-      color:var(--ink-mid);
-      cursor:pointer;
-      box-shadow:0 2px 8px rgba(0,0,0,.1);
+    .mf-pill.on{background:var(--ink);border-color:var(--ink);color:#fff}
+    .mf-pill.off{opacity:.4}
+    .mf-arr{
+      display:flex;align-items:center;gap:4px;
+      padding:6px 11px;border-radius:20px;font-size:12px;
+      background:#fff;border:1px solid var(--cream-border);color:var(--ink-mid);
     }
-    .arr-float select{
-      border:none;background:transparent;font-size:11px;
-      color:var(--ink);font-family:"DM Sans",sans-serif;
-      outline:none;cursor:pointer;max-width:120px;
+    .mf-arr select{border:none;background:transparent;font-size:12px;
+      color:var(--ink);font-family:"DM Sans",sans-serif;outline:none;cursor:pointer;}
+    .mf-toggle-map{
+      margin-left:auto;
+      display:flex;align-items:center;gap:4px;
+      padding:6px 11px;border-radius:20px;font-size:12px;
+      background:var(--cream-dark);border:1px solid var(--cream-border);
+      color:var(--ink-mid);cursor:pointer;white-space:nowrap;
     }
 
-    .bottom-sheet{
-      display:block;
-      position:absolute;
-      bottom:-100%;
-      left:0;right:0;
-      background:#fff;
-      border-radius:16px 16px 0 0;
-      border-top:1px solid var(--cream-border);
-      padding:12px 16px 32px;
-      z-index:600;
-      transition:bottom .3s ease;
-      max-height:70vh;
-      overflow-y:auto;
+    /* Mobile list view */
+    .m-list{display:flex;flex-direction:column;order:3}
+    .m-list-header{
+      padding:8px 14px;font-size:10px;letter-spacing:1px;
+      text-transform:uppercase;color:var(--ink-light);
+      background:var(--cream-dark);border-bottom:1px solid var(--cream-border);
+      font-weight:500;
     }
-    .bottom-sheet.open{bottom:0}
-    .bs-handle{width:36px;height:4px;border-radius:2px;background:var(--cream-border);margin:0 auto 12px;cursor:pointer}
-    .bs-close{position:absolute;top:12px;right:16px;font-size:18px;color:var(--ink-light);cursor:pointer;background:none;border:none;padding:4px}
+    .m-list-item{
+      display:flex;align-items:center;gap:10px;
+      padding:11px 14px;border-bottom:0.5px solid var(--cream-border);
+      background:#fff;cursor:pointer;transition:background .1s;
+    }
+    .m-list-item:active{background:var(--cream)}
+    .m-item-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .m-item-name{font-size:13px;color:var(--ink);font-weight:500;flex:1;line-height:1.3}
+    .m-item-arr{font-size:11px;color:var(--ink-light);flex-shrink:0}
+    .m-list-empty{padding:24px 14px;text-align:center;font-size:12px;color:var(--ink-light);font-style:italic}
+    .m-map-hidden{display:none!important}
   }
 
 
@@ -286,6 +292,23 @@
     </div>
   </div>
 
+  <div class="m-filterbar" id="m-filterbar">
+    <div class="mf-pill on" id="mpill-A" onclick="toggleFilter('A')"><span class="pip" style="background:var(--green)"></span>Dog friendly</div>
+    <div class="mf-pill on" id="mpill-B" onclick="toggleFilter('B')"><span class="pip" style="background:var(--amber)"></span>Semi</div>
+    <div class="mf-pill on" id="mpill-C" onclick="toggleFilter('C')"><span class="pip" style="background:var(--red)"></span>Non admis</div>
+    <div class="mf-arr"><select id="arr-select-mobile" onchange="syncArrMobile()">
+      <option value="0">Tous</option>
+      <option value="1">1er</option><option value="2">2e</option><option value="3">3e</option>
+      <option value="4">4e</option><option value="5">5e</option><option value="6">6e</option>
+      <option value="7">7e</option><option value="8">8e</option><option value="9">9e</option>
+      <option value="10">10e</option><option value="11">11e</option><option value="12">12e</option>
+      <option value="13">13e</option><option value="14">14e</option><option value="15">15e</option>
+      <option value="16">16e</option><option value="17">17e</option><option value="18">18e</option>
+      <option value="19">19e</option><option value="20">20e</option>
+    </select></div>
+    <div class="mf-toggle-map" id="mf-toggle-map" onclick="toggleMobileMap()">Carte</div>
+  </div>
+
   <!-- MAP VIEW -->
   <div class="map-view" id="map-view">
     <!-- SIDEBAR -->
@@ -344,34 +367,6 @@
     <!-- MAP -->
     <div class="map-wrap">
       <div id="map"></div>
-      <div class="filter-bar-mobile" id="filter-bar-mobile">
-        <div class="fm-pill on" id="mpill-A" onclick="toggleFilter('A')"><span class="pip" style="background:var(--green)"></span>Dog friendly</div>
-        <div class="fm-pill on" id="mpill-B" onclick="toggleFilter('B')"><span class="pip" style="background:var(--amber)"></span>Semi</div>
-        <div class="fm-pill on" id="mpill-C" onclick="toggleFilter('C')"><span class="pip" style="background:var(--red)"></span>Non admis</div>
-        <div class="arr-float">
-          <span class="pip" style="background:var(--ink-light)"></span>
-          <select id="arr-select-mobile" onchange="filterArrMobile()">
-            <option value="0">Tous</option>
-            <option value="1">1er</option><option value="2">2e</option>
-            <option value="3">3e</option><option value="4">4e</option>
-            <option value="5">5e</option><option value="6">6e</option>
-            <option value="7">7e</option><option value="8">8e</option>
-            <option value="9">9e</option><option value="10">10e</option>
-            <option value="11">11e</option><option value="12">12e</option>
-            <option value="13">13e</option><option value="14">14e</option>
-            <option value="15">15e</option><option value="16">16e</option>
-            <option value="17">17e</option><option value="18">18e</option>
-            <option value="19">19e</option><option value="20">20e</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="bottom-sheet" id="bottom-sheet">
-        <div class="bs-handle" onclick="closeSheet()"></div>
-        <button class="bs-close" onclick="closeSheet()">×</button>
-        <div id="bottom-sheet-content"></div>
-      </div>
-
       <div class="loading" id="loading">
         <div class="loading-title">Paris <span style="color:var(--accent)">Hates</span> Dogs</div>
         <div class="loading-sub">Chargement des espaces verts…</div>
@@ -506,6 +501,18 @@
     <div class="asterisk-note">* Les chiffres affichés (27 Dog friendly, 104 Semi dog friendly, ~1%) sont calculés selon notre méthodologie propre et non selon le référentiel officiel de la Ville de Paris. Ils sont susceptibles d'évoluer avec les mises à jour des données sources.</div>
   </div>
 
+  <!-- MOBILE LIST -->
+  <div class="m-list" id="m-list">
+    <div class="m-list-header" id="m-list-header">0 espaces</div>
+    <div id="m-list-items"></div>
+  </div>
+
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="bs-handle" onclick="closeSheet()"></div>
+    <button class="bs-close" onclick="closeSheet()">×</button>
+    <div id="bottom-sheet-content"></div>
+  </div>
+
   <!-- BOTTOMBAR -->
   <div class="bottombar">
     <div class="bs"><span class="bd" style="background:var(--green)"></span><span id="bt-A">Dog friendly · 27</span></div>
@@ -531,10 +538,12 @@ let selectedId = null;
 
 function syncPillUI() {
   ['A','B','C'].forEach(cat => {
-    const pill = document.getElementById('pill-' + cat);
-    if (!pill) return;
-    if (activeFilters[cat]) { pill.classList.add('on'); pill.classList.remove('off'); }
-    else { pill.classList.remove('on'); pill.classList.add('off'); }
+    ['pill-','mpill-'].forEach(pre => {
+      const el = document.getElementById(pre + cat);
+      if(!el) return;
+      if(activeFilters[cat]){ el.classList.add('on'); el.classList.remove('off'); }
+      else { el.classList.remove('on'); el.classList.add('off'); }
+    });
   });
 }
 
@@ -557,10 +566,13 @@ async function init() {
   try {
     const resp = await fetch('phd_data.json');
     allData = await resp.json();
-    buildMarkers();   // creates marker objects only, never adds to map
-    renderMarkers();  // single source of truth: adds/removes based on activeFilters
+    buildMarkers();
+    renderMarkers();
     updateStats();
     document.getElementById('loading').style.display = 'none';
+    if(window.innerWidth <= 768){
+      document.querySelector('.map-wrap').classList.add('m-map-hidden');
+    }
   } catch(e) {
     document.getElementById('loading').innerHTML = '<div style="color:#c0341c;font-size:13px;padding:20px;text-align:center">Erreur de chargement des données.<br>Vérifiez que phd_data.json est dans le même dossier.</div>';
   }
@@ -603,25 +615,74 @@ function renderMarkers() {
     }
   });
   updateCounts();
+  renderMobileList();
 }
 
 function toggleFilter(cat) {
   activeFilters[cat] = !activeFilters[cat];
-  const pill = document.getElementById('pill-' + cat);
-  if(pill){ pill.classList.toggle('on', activeFilters[cat]); pill.classList.toggle('off', !activeFilters[cat]); }
-  const mpill = document.getElementById('mpill-' + cat);
-  if(mpill){ mpill.classList.toggle('on', activeFilters[cat]); mpill.classList.toggle('off', !activeFilters[cat]); }
+  ['pill-','mpill-'].forEach(pre => {
+    const el = document.getElementById(pre + cat);
+    if(el){ el.classList.toggle('on', activeFilters[cat]); el.classList.toggle('off', !activeFilters[cat]); }
+  });
   renderMarkers();
-}
-
-function filterArrMobile() {
-  const sel = document.getElementById('arr-select-mobile');
-  document.getElementById('arr-select').value = sel.value;
-  filterArr();
 }
 
 function closeSheet() {
   document.getElementById('bottom-sheet').classList.remove('open');
+}
+
+function syncArrMobile() {
+  const v = document.getElementById('arr-select-mobile').value;
+  document.getElementById('arr-select').value = v;
+  filterArr();
+}
+
+let mobileMapVisible = false;
+function toggleMobileMap() {
+  mobileMapVisible = !mobileMapVisible;
+  const wrap = document.querySelector('.map-wrap');
+  const btn = document.getElementById('mf-toggle-map');
+  if(mobileMapVisible){
+    wrap.classList.remove('m-map-hidden');
+    btn.style.background = 'var(--ink)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--ink)';
+    setTimeout(()=>{ if(map) map.invalidateSize(); }, 100);
+  } else {
+    wrap.classList.add('m-map-hidden');
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+}
+
+function renderMobileList() {
+  if(window.innerWidth > 768) return;
+  const items = allData.filter(shouldShow);
+  const header = document.getElementById('m-list-header');
+  const container = document.getElementById('m-list-items');
+  if(!header || !container) return;
+  header.textContent = items.length + ' espace' + (items.length !== 1 ? 's' : '');
+  if(items.length === 0){
+    container.innerHTML = '<div class="m-list-empty">Aucun espace pour ces filtres.</div>';
+    return;
+  }
+  const sorted = [...items].sort((a,b) => {
+    const order = {A:0, B:1, C:2};
+    return order[a.cat_phd] - order[b.cat_phd] || a.arr - b.arr;
+  });
+  container.innerHTML = sorted.slice(0,200).map(ev => `
+    <div class="m-list-item" onclick="openFromList(${ev.id})">
+      <span class="m-item-pip" style="background:${CAT_COLORS[ev.cat_phd]}"></span>
+      <span class="m-item-name">${capitalise(ev.nom)}</span>
+      <span class="m-item-arr">${ev.arr ? ev.arr + 'e' : ''}</span>
+    </div>
+  `).join('') + (sorted.length > 200 ? '<div class="m-list-empty">+ ' + (sorted.length-200) + ' autres — affinez avec les filtres.</div>' : '');
+}
+
+function openFromList(id) {
+  const ev = allData.find(e => e.id === id);
+  if(ev) showDetail(ev);
 }
 
 function filterArr() {
@@ -726,8 +787,7 @@ function showDetail(ev) {
     </div>
   `;
 
-  const isMob = window.innerWidth <= 768;
-  if(isMob){
+  if(window.innerWidth <= 768){
     document.getElementById('bottom-sheet-content').innerHTML = detailHTML;
     document.getElementById('bottom-sheet').classList.add('open');
   } else {
