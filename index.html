@@ -132,6 +132,16 @@
   .methodo .rule-list li{font-size:12px;color:var(--ink-mid);padding:4px 0 4px 16px;position:relative;line-height:1.5}
   .methodo .rule-list li::before{content:"→";position:absolute;left:0;color:var(--accent)}
   .methodo .asterisk-note{font-size:11px;color:var(--ink-light);font-style:italic;margin-top:24px;padding-top:16px;border-top:1px solid var(--cream-border)}
+  .methodo-num{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-right:8px;vertical-align:middle}
+  .methodo-note{background:var(--cream-dark);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12px;color:var(--ink-mid);line-height:1.7;margin:14px 0}
+  .methodo-case-list{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+  .methodo-case{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--cream-border);background:#fff}
+  .methodo-case-tag{font-size:10px;font-weight:700;letter-spacing:0.5px;padding:3px 8px;border-radius:4px;flex-shrink:0;margin-top:1px;white-space:nowrap}
+  .tag-voirie{background:#f0ede6;color:var(--ink-mid)}
+  .tag-restreint{background:var(--amber-bg);color:var(--amber)}
+  .tag-faux{background:var(--red-bg);color:var(--red)}
+  .tag-ok{background:var(--green-bg);color:var(--green)}
+  .methodo-case-text{font-size:12px;color:var(--ink-mid);line-height:1.6}
   .map-view{display:flex;flex:1;min-height:0}
   .map-view.hidden{display:none}
 
@@ -164,7 +174,7 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-eyebrow">Paris · Tous arrondissements · Données officielles Ville de Paris</div>
-    <div class="hero-title">Seulement <em id="score-pct">~10%</em> des espaces verts réellement utilisables avec un chien<em>*</em></div>
+    <div class="hero-title">Seulement <em id="score-pct">~9%</em> des espaces verts réellement utilisables avec un chien<em>*</em></div>
     <div class="hero-sub">Pour les 90% restants, bonne chance — et l'amende à la clé.</div>
   </div>
 
@@ -177,19 +187,19 @@
       <div class="stat-sub">parcs, jardins, squares, voirie</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num muted" id="stat-A">260</div>
+      <div class="stat-num muted" id="stat-A">231</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--green);width:10%"></div></div>
       <div class="stat-desc">Dog friendly</div>
       <div class="stat-sub stat-asterisk">selon notre analyse *</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num muted" id="stat-B">361</div>
+      <div class="stat-num muted" id="stat-B">390</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--amber);width:14%"></div></div>
       <div class="stat-desc">Semi dog friendly</div>
       <div class="stat-sub stat-asterisk">selon notre analyse *</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num accent" id="stat-C">~10%</div>
+      <div class="stat-num accent" id="stat-C">~9%</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--red);width:10%"></div></div>
       <div class="stat-desc">des espaces accessibles aux chiens</div>
       <div class="stat-sub">Paris, championne de l'exclusion *</div>
@@ -272,64 +282,126 @@
 
   <!-- METHODO PAGE -->
   <div class="methodo" id="methodo-page">
-    <h1>Notre <em>méthode</em></h1>
-    <div class="sub">Pourquoi les chiffres officiels de la Ville de Paris ne reflètent pas la réalité du terrain.</div>
+    <h1>Transparence <em>&amp; méthode</em></h1>
+    <div class="sub">Paris annonce 165 parcs. La réalité, c'est autre chose.</div>
+    <p>Ce dashboard est né d'une frustration simple : les chiffres officiels de la Ville de Paris sur l'accès des chiens aux espaces verts ne tiennent pas à l'examen. Voici comment on a vérifié, et ce qu'on a trouvé.</p>
 
-    <h2>Le problème avec les données officielles</h2>
-    <p>La Ville de Paris recense officiellement 165 parcs et jardins « ouverts aux chiens en laisse ». Ce chiffre, mis en avant sur paris.fr, omet une réalité évidente pour tout propriétaire de chien : être théoriquement autorisé ne signifie pas être réellement utilisable.</p>
-    <p>Un parc entièrement clôturé avec accès restreint aux seules allées bitumées, un square dominé par une aire de jeux interdite aux chiens, un jardin linéaire de voirie sans continuité réelle — tous figurent dans le comptage officiel. Notre analyse corrige cela.</p>
+    <h2><span class="methodo-num">01</span> Les données officielles</h2>
+    <p>La Ville de Paris publie sur paris.fr une page intitulée "Les chiens à Paris", mise à jour le 12 janvier 2026. Elle y annonce <strong>165 espaces verts</strong> accessibles aux chiens tenus en laisse, 45 espaces canins clos, et 3 espaces de liberté dans les bois de Boulogne et Vincennes.</p>
+    <p>Ces chiffres sont repris partout sans être vérifiés. Le dataset Open Data Paris "espaces_verts" (licence ODbL) fournit la géolocalisation et le type de chaque espace vert géré par la DEVE — mais ne contient aucun champ "chiens autorisés". La classification repose donc entièrement sur la liste nominative de paris.fr.</p>
+    <div class="methodo-note">
+      <strong>Limite importante</strong> — Nous n'avons pas visité physiquement chaque espace. Notre analyse est documentaire : elle croise la liste officielle avec des sources secondaires et une analyse des descriptions d'adresses.
+    </div>
 
-    <h2>Notre taxonomie</h2>
+    <h2><span class="methodo-num">02</span> La règle officielle — et ce que paris.fr ne dit pas</h2>
+    <p>Le règlement des parcs de la Ville de Paris (article 11) est clair : <em>"l'accès des animaux de compagnie tenus en laisse est autorisé au sein des jardins ne comportant pas d'aires de jeux pour enfants et dans certains parcs signalés comme tels."</em></p>
+    <p>Cette règle a une logique asymétrique que paris.fr ne mentionne jamais :</p>
+    <ul class="rule-list">
+      <li>Présence d'une aire de jeux = chiens interdits. Règle absolue.</li>
+      <li>Absence d'aire de jeux ≠ chiens autorisés. L'absence ne garantit rien. Un parc peut interdire les chiens pour d'autres raisons. La réciprocité n'existe pas.</li>
+    </ul>
+
+    <h2><span class="methodo-num">03</span> Ce que paris.fr glisse dans ses 165</h2>
+    <p>En analysant la liste espace par espace, on a identifié plusieurs catégories d'espaces dont la présence dans la liste pose question.</p>
+
+    <div class="methodo-case-list">
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-voirie">Voirie</span>
+        <div class="methodo-case-text"><strong>Mail Pierre Desproges</strong> — listé comme espace vert autorisé. En réalité : une portion de la rue de la Roquette (11e), rattachée administrativement au Square de la Roquette — lui-même interdit aux chiens car il possède une aire de jeux.</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-voirie">Voirie</span>
+        <div class="methodo-case-text"><strong>Esplanade des Invalides, Cours Albert 1er, Cours la Reine, Esplanade Habib Bourguiba, Promenade Quai Branly</strong> — espaces entièrement ouverts sur la voie publique, sans grille ni entrée. Les chiens y circulent sur des allées... comme sur n'importe quel trottoir parisien.</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-voirie">Voirie</span>
+        <div class="methodo-case-text"><strong>Promenade avenue de Breteuil, Promenade Richard Lenoir, Allée des Cygnes</strong> — mêmes caractéristiques : espaces linéaires ouverts sur voirie, sans fermeture possible.</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-restreint">Accès restreint</span>
+        <div class="methodo-case-text"><strong>Parc Monceau</strong> — parc fermé, mais les chiens ne sont autorisés que sur deux allées spécifiques (allée Ferdousi et allée Comtesse de Ségur). Le reste du parc reste interdit. Compté comme espace "autorisé".</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-restreint">Accès restreint</span>
+        <div class="methodo-case-text"><strong>Parc des Buttes-Chaumont</strong> — autorisés sur les allées périphériques seulement. Le cœur du parc, les pelouses et les îles restent interdits.</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-faux">Faux positif</span>
+        <div class="methodo-case-text"><strong>Square Louis Majorelle (11e)</strong> — listé dans les espaces autorisés par paris.fr. Plusieurs sources indiquent que les chiens y sont interdits, en raison de la présence d'un bac à sable pour enfants. Contradiction interne dans les données de la Ville.</div>
+      </div>
+      <div class="methodo-case">
+        <span class="methodo-case-tag tag-ok">Vrai parc ✓</span>
+        <div class="methodo-case-text"><strong>Parc Montsouris, Jardin du Ranelagh, Jardins du Trocadéro, Parc de Bercy</strong> — vrais parcs fermés avec entrées, où les chiens sont autorisés dans l'ensemble des allées. Ce sont ces espaces qui méritent d'être dans la liste.</div>
+      </div>
+    </div>
+    <div class="methodo-note">
+      <strong>En résumé</strong> — La Ville de Paris mélange dans ses "165 espaces autorisés" des vrais parcs fermés, des promenades sur voirie ouverte, et des parcs où l'accès est limité à une ou deux allées. Le chiffre de 165 est donc trompeur — sans qu'on puisse avancer un chiffre alternatif précis faute d'audit exhaustif.
+    </div>
+
+    <h2><span class="methodo-num">04</span> Notre taxonomie &amp; règles métier</h2>
 
     <div class="cat-block">
       <span class="cat-pip" style="background:var(--green)"></span>
       <div>
         <div class="cat-title">Dog friendly</div>
-        <div class="cat-desc">Espace réellement utilisable pour une promenade avec un chien. Continuité de marche possible, usage réel de parc, chien autorisé ou toléré, espace suffisant.</div>
+        <div class="cat-desc">Espace réellement utilisable pour une promenade avec un chien. Continuité de marche possible, usage réel de parc, chien autorisé ou toléré, espace suffisant (≥ 3 000 m² clôturé, ou promenade plantée).</div>
       </div>
     </div>
-
     <div class="cat-block">
       <span class="cat-pip" style="background:var(--amber)"></span>
       <div>
         <div class="cat-title">Semi dog friendly</div>
-        <div class="cat-desc">Espace utilisable mais contraint. Accès restreint aux allées (grands parcs clôturés), fragmentation forte, forte fréquentation ou cohabitation d'usages incompatibles. Usage partiel seulement.</div>
+        <div class="cat-desc">Espace utilisable mais contraint. Grands parcs clôturés (allées uniquement), squares et jardins clôturés entre 500 et 3 000 m², fragmentation forte ou cohabitation d'usages incompatibles.</div>
       </div>
     </div>
-
     <div class="cat-block">
       <span class="cat-pip" style="background:var(--red)"></span>
       <div>
         <div class="cat-title">Not dog friendly</div>
-        <div class="cat-desc">Espace vert non utilisable avec un chien. Comprend les espaces à interdiction structurelle (aire de jeux dominante, cimetière, établissement scolaire), les espaces décoratifs de voirie (jardinières, murs végétalisés, terre-pleins), et les espaces trop fragmentés ou privatifs pour un usage réel.</div>
+        <div class="cat-desc">Espace non utilisable avec un chien. Inclut les interdictions structurelles (aire de jeux, cimetière, école), les espaces décoratifs de voirie (jardinières, murs végétalisés, terre-pleins), les espaces non clôturés hors promenade, et les espaces privatifs ou trop fragmentés.</div>
       </div>
     </div>
 
-    <h2>Les règles métier</h2>
-    <ul class="rule-list">
+    <ul class="rule-list" style="margin-top:12px">
       <li>Présence d'une aire de jeux dominante → Not dog friendly (interdit structurel)</li>
-      <li>Voirie végétalisée, jardinières, mails, terre-pleins → Not dog friendly (hors périmètre d'analyse)</li>
+      <li>Voirie végétalisée, jardinières, mails, terre-pleins → Not dog friendly</li>
       <li>Catégorie Promenade plantée → Dog friendly (continuité linéaire, usage réel)</li>
       <li>Catégorie Parc clôturé → Semi dog friendly (accès restreint aux allées)</li>
       <li>Absence de clôture hors promenade → Not dog friendly (continuité non garantie)</li>
-      <li>Square clôturé ≥ 3 000 m² → Dog friendly</li>
-      <li>Jardin clôturé ≥ 3 000 m² → Dog friendly</li>
+      <li>Square ou jardin clôturé ≥ 3 000 m² → Dog friendly</li>
       <li>Square ou jardin clôturé entre 500 et 3 000 m² → Semi dog friendly</li>
       <li>Cimetières, établissements scolaires, sportifs → Not dog friendly</li>
       <li>Jardins privatifs, jardins d'immeubles → Not dog friendly</li>
     </ul>
 
-    <h2>Les données</h2>
-    <p>Nous utilisons le jeu de données « Espaces verts et assimilés » publié par la Direction des Espaces Verts et de l'Environnement (DEVE) de la Ville de Paris, disponible sur opendata.paris.fr. Il recense 2 531 espaces verts publics gérés par la Ville, avec leurs attributs géographiques, leur type, leur surface et la présence ou non d'une clôture.</p>
-    <p>Pour les 287 espaces sans information sur la clôture, nous déduisons la classification depuis le contexte : nom, type d'espace, surface, et voisinage immédiat. Les cas ambigus sont traités de façon conservatrice (Not dog friendly par défaut).</p>
+    <h2><span class="methodo-num">05</span> Limites de notre analyse</h2>
+    <p><strong>Vérification partielle</strong> — nous n'avons pas vérifié les 165 espaces un par un sur le terrain. La classification repose sur des sources documentaires et l'analyse des descriptions d'adresses. Des erreurs sont possibles.</p>
+    <p><strong>Données en mouvement</strong> — la Ville s'est engagée à ouvrir de nouveaux espaces. Notre référence est le 12 janvier 2026. Les ouvertures de décembre 2025 (Parc Monceau, Parc de Bercy, Square Pasdeloup) sont intégrées.</p>
+    <p><strong>Définition appliquée</strong> — nous considérons comme "vrai espace vert fermé" tout espace ayant une entrée identifiable, des horaires d'ouverture/fermeture, et une séparation physique de la voie publique. Cette définition est discutable.</p>
 
-    <div class="asterisk-note">* Les chiffres affichés (260 Dog friendly, 361 Semi dog friendly, ~10%) sont calculés selon notre méthodologie propre et non selon le référentiel officiel de la Ville de Paris. Ils sont susceptibles d'évoluer avec les mises à jour des données sources.</div>
+    <h2><span class="methodo-num">06</span> Sources</h2>
+    <p style="font-weight:500;margin-bottom:4px">Officielles</p>
+    <ul class="rule-list">
+      <li>paris.fr — Les chiens à Paris (màj 12/01/2026)</li>
+      <li>Open Data Paris — Dataset espaces_verts (licence ODbL)</li>
+      <li>paris.fr — Parcs, jardins, squares et espaces verts</li>
+      <li>Règlement des parcs, jardins et bois de la Ville de Paris</li>
+      <li>Document DEVE — Espaces canins Paris (octobre 2025)</li>
+    </ul>
+    <p style="font-weight:500;margin-bottom:4px;margin-top:12px">Secondaires</p>
+    <ul class="rule-list">
+      <li>parispapote.fr, dogiledotnet.wordpress.com, gudog.fr — listes compilées par des propriétaires de chiens</li>
+      <li>Mairies d'arrondissement (17e, Paris Centre) — pages "animaux à Paris"</li>
+      <li>Google Maps — descriptions et avis utilisateurs pour cas suspects</li>
+    </ul>
+
+    <div class="asterisk-note">* Les chiffres affichés (231 Dog friendly, 390 Semi dog friendly, ~9%) sont calculés selon notre méthodologie propre et non selon le référentiel officiel de la Ville de Paris. Ils sont susceptibles d'évoluer avec les mises à jour des données sources.</div>
   </div>
 
   <!-- BOTTOMBAR -->
   <div class="bottombar">
-    <div class="bs"><span class="bd" style="background:var(--green)"></span><span id="bt-A">Dog friendly · 260</span></div>
-    <div class="bs"><span class="bd" style="background:var(--amber)"></span><span id="bt-B">Semi · 361</span></div>
+    <div class="bs"><span class="bd" style="background:var(--green)"></span><span id="bt-A">Dog friendly · 231</span></div>
+    <div class="bs"><span class="bd" style="background:var(--amber)"></span><span id="bt-B">Semi · 390</span></div>
     <div class="bs"><span class="bd" style="background:var(--red)"></span><span id="bt-C">Not dog friendly · 1 908</span></div>
     <div class="asterisk">* Calculés selon notre méthodologie</div>
   </div>
@@ -349,6 +421,15 @@ let votes = JSON.parse(localStorage.getItem('phd_votes') || '{}');
 let voteCounts = JSON.parse(localStorage.getItem('phd_vote_counts') || '{}');
 let selectedId = null;
 
+function syncPillUI() {
+  ['A','B','C'].forEach(cat => {
+    const pill = document.getElementById('pill-' + cat);
+    if (!pill) return;
+    if (activeFilters[cat]) { pill.classList.add('on'); pill.classList.remove('off'); }
+    else { pill.classList.remove('on'); pill.classList.add('off'); }
+  });
+}
+
 async function init() {
   map = L.map('map', {
     center: [48.8566, 2.3522],
@@ -361,17 +442,13 @@ async function init() {
     maxZoom: 19
   }).addTo(map);
 
-  // Sync pill UI with activeFilters state
-  ['A','B','C'].forEach(cat => {
-    const pill = document.getElementById('pill-' + cat);
-    pill.classList.toggle('on', activeFilters[cat]);
-    pill.classList.toggle('off', !activeFilters[cat]);
-  });
+  syncPillUI();
 
   try {
     const resp = await fetch('phd_data.json');
     allData = await resp.json();
-    buildMarkers();
+    buildMarkers();   // creates marker objects only, never adds to map
+    renderMarkers();  // single source of truth: adds/removes based on activeFilters
     updateStats();
     document.getElementById('loading').style.display = 'none';
   } catch(e) {
@@ -380,23 +457,22 @@ async function init() {
 }
 
 function buildMarkers() {
-  Object.values(markers).forEach(m => map.removeLayer(m));
+  // Creates Leaflet marker objects ONLY — never adds to map
+  Object.values(markers).forEach(m => { try { map.removeLayer(m); } catch(e){} });
   markers = {};
 
   allData.forEach(ev => {
-    const color = CAT_COLORS[ev.cat_phd];
-    const radius = ev.cat_phd === 'C' ? 3 : 5;
+    const isC = ev.cat_phd === 'C';
     const m = L.circleMarker([ev.lat, ev.lon], {
-      radius: radius,
-      fillColor: color,
+      radius: isC ? 3 : 5,
+      fillColor: CAT_COLORS[ev.cat_phd],
       color: '#fff',
-      weight: ev.cat_phd === 'C' ? 0.5 : 1,
-      fillOpacity: ev.cat_phd === 'C' ? 0.5 : 0.85
+      weight: isC ? 0.5 : 1,
+      fillOpacity: isC ? 0.55 : 0.85
     });
     m.on('click', () => showDetail(ev));
     markers[ev.id] = m;
-    // Only add to map if filter is active
-    if (activeFilters[ev.cat_phd]) m.addTo(map);
+    // NO m.addTo(map) here — renderMarkers() is the only place that adds markers
   });
 }
 
