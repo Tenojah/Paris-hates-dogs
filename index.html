@@ -28,7 +28,7 @@
     --red-border:#e8b0a0;
     --accent:#c0341c;
   }
-  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:14px}
+  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:14px;overflow:hidden}
 
   /* TOPBAR */
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--cream);border-bottom:1px solid var(--cream-border);flex-shrink:0;position:relative;z-index:1000}
@@ -62,7 +62,7 @@
 
   /* BODY */
   .body{display:flex;flex:1;overflow:hidden;min-height:0}
-  .app{display:flex;flex-direction:column;height:100vh}
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
   /* SIDEBAR */
   .sidebar{width:200px;flex-shrink:0;border-right:1px solid var(--cream-border);padding:14px 12px;display:flex;flex-direction:column;gap:14px;background:var(--cream);overflow-y:auto}
@@ -79,7 +79,7 @@
 
   /* MAP */
   .map-wrap{flex:1;position:relative;overflow:hidden}
-  #map{width:100%;height:100%}
+  #map{width:100%;height:100%;min-height:300px}
   .search-bar{position:absolute;top:12px;left:12px;z-index:500;background:#fff;border:1px solid var(--cream-border);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-light);box-shadow:0 2px 8px rgba(0,0,0,.08)}
 
   /* DETAIL PANEL */
@@ -144,6 +144,27 @@
   .methodo-case-text{font-size:12px;color:var(--ink-mid);line-height:1.6}
   .map-view{display:flex;flex:1;min-height:0}
   .map-view.hidden{display:none}
+  @media(max-width:768px){
+    .stats-row{grid-template-columns:repeat(2,1fr)}
+    .stat-cell:nth-child(3){border-top:1px solid var(--cream-border)}
+    .stat-cell:nth-child(4){border-top:1px solid var(--cream-border);border-right:none}
+    .sidebar{display:none}
+    .detail-panel{display:none}
+    .map-view{flex-direction:column}
+    .map-wrap{flex:1;min-height:0}
+    #map{width:100%;height:100%}
+    .topbar{padding:0 12px}
+    .topbar-meta{display:none}
+    .ntab{padding:5px 10px;font-size:11px}
+    .hero{padding:10px 14px 8px}
+    .hero-title{font-size:17px}
+    .bottombar{display:none}
+    .detail-panel-mobile{display:flex!important}
+  }
+  @media(max-width:768px){
+    .map-view{height:calc(100dvh - 52px - 60px - 44px)}
+  }
+
 
   /* LEAFLET overrides */
   .leaflet-popup-content-wrapper{border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
@@ -431,6 +452,25 @@ function syncPillUI() {
 }
 
 async function init() {
+  const mapEl = document.getElementById('map');
+  function setMapHeight(){
+    const app = document.getElementById('app');
+    const topbar = document.querySelector('.topbar');
+    const hero = document.querySelector('.hero');
+    const statsRow = document.querySelector('.stats-row');
+    const bottombar = document.querySelector('.bottombar');
+    const isMobile = window.innerWidth <= 768;
+    if(isMobile){
+      const used = (topbar?.offsetHeight||52) + (hero?.offsetHeight||60) + (statsRow?.offsetHeight||44);
+      const avail = window.innerHeight - used;
+      mapEl.style.height = Math.max(avail, 300) + 'px';
+    } else {
+      mapEl.style.height = '';
+    }
+  }
+  setMapHeight();
+  window.addEventListener('resize', ()=>{ setMapHeight(); if(map) map.invalidateSize(); });
+
   map = L.map('map', {
     center: [48.8566, 2.3522],
     zoom: 12,
