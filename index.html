@@ -361,6 +361,13 @@ async function init() {
     maxZoom: 19
   }).addTo(map);
 
+  // Sync pill UI with activeFilters state
+  ['A','B','C'].forEach(cat => {
+    const pill = document.getElementById('pill-' + cat);
+    pill.classList.toggle('on', activeFilters[cat]);
+    pill.classList.toggle('off', !activeFilters[cat]);
+  });
+
   try {
     const resp = await fetch('phd_data.json');
     allData = await resp.json();
@@ -378,16 +385,18 @@ function buildMarkers() {
 
   allData.forEach(ev => {
     const color = CAT_COLORS[ev.cat_phd];
+    const radius = ev.cat_phd === 'C' ? 3 : 5;
     const m = L.circleMarker([ev.lat, ev.lon], {
-      radius: 5,
+      radius: radius,
       fillColor: color,
       color: '#fff',
-      weight: 1,
-      fillOpacity: 0.85
+      weight: ev.cat_phd === 'C' ? 0.5 : 1,
+      fillOpacity: ev.cat_phd === 'C' ? 0.5 : 0.85
     });
     m.on('click', () => showDetail(ev));
     markers[ev.id] = m;
-    if (shouldShow(ev)) m.addTo(map);
+    // Only add to map if filter is active
+    if (activeFilters[ev.cat_phd]) m.addTo(map);
   });
 }
 
