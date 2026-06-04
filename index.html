@@ -1,164 +1,555 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<title>Dog Map Paris</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paris Hates Dogs — PHD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --cream:#f4f1ea;
+    --cream-dark:#ece8df;
+    --cream-border:#ddd8cc;
+    --ink:#1a1916;
+    --ink-mid:#5a5750;
+    --ink-light:#9a968e;
+    --green:#3d7a38;
+    --green-bg:#e8f2e7;
+    --green-border:#b8d4b5;
+    --amber:#b87010;
+    --amber-bg:#fdf0dc;
+    --amber-border:#e8c880;
+    --red:#c0341c;
+    --red-bg:#fbeae6;
+    --red-border:#e8b0a0;
+    --accent:#c0341c;
+  }
+  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:14px}
 
-#dashboard {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    width: 240px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--cream);border-bottom:1px solid var(--cream-border);flex-shrink:0;position:relative;z-index:1000}
+  .logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);letter-spacing:-0.3px;line-height:1}
+  .logo em{color:var(--accent);font-style:normal}
+  .logo sup{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--ink-light);font-weight:400;letter-spacing:1.5px;margin-left:5px;vertical-align:super}
+  .nav{display:flex;gap:2px}
+  .ntab{font-size:12px;padding:6px 14px;border-radius:20px;color:var(--ink-mid);cursor:pointer;letter-spacing:0.1px;border:1px solid transparent;transition:all .15s}
+  .ntab:hover{background:var(--cream-dark)}
+  .ntab.on{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .topbar-meta{font-size:11px;color:var(--ink-light)}
 
-#map {
-    height: 100vh;
-    width: 100%;
-}
+  /* HERO */
+  .hero{background:var(--green-bg);border-bottom:1px solid var(--green-border);padding:14px 20px 12px;flex-shrink:0}
+  .hero-eyebrow{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--green);margin-bottom:6px;font-weight:500}
+  .hero-title{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.2;color:var(--ink);margin-bottom:4px}
+  .hero-title em{color:var(--accent);font-style:normal}
+  .hero-sub{font-size:12px;color:#4a6e45;font-style:italic}
 
-button {
-    width: 100%;
-    margin-top: 5px;
-    cursor: pointer;
-}
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--cream-border);flex-shrink:0}
+  .stat-cell{padding:12px 16px;border-right:1px solid var(--cream-border)}
+  .stat-cell:last-child{border-right:none}
+  .stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);line-height:1}
+  .stat-num.accent{color:var(--accent)}
+  .stat-num.muted{color:var(--ink-light)}
+  .stat-bar{height:2px;background:var(--cream-border);border-radius:1px;margin:5px 0}
+  .stat-bar-fill{height:2px;border-radius:1px}
+  .stat-desc{font-size:11px;color:var(--ink-mid);line-height:1.4}
+  .stat-sub{font-size:10px;color:var(--ink-light);margin-top:2px}
+
+  /* BODY */
+  .body{display:flex;flex:1;overflow:hidden;min-height:0}
+  .app{display:flex;flex-direction:column;height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{width:200px;flex-shrink:0;border-right:1px solid var(--cream-border);padding:14px 12px;display:flex;flex-direction:column;gap:14px;background:var(--cream);overflow-y:auto}
+  .slabel{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:7px;font-weight:500}
+  .pills{display:flex;flex-direction:column;gap:3px}
+  .pill{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--ink-mid);border:1px solid transparent;transition:all .12s;user-select:none}
+  .pill:hover{background:var(--cream-dark)}
+  .pill.on{background:#fff;border-color:var(--cream-border);color:var(--ink)}
+  .pill.off{opacity:.45}
+  .pip{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .pcount{margin-left:auto;font-size:10px;color:var(--ink-light)}
+  .arr-sel{width:100%;background:#fff;border:1px solid var(--cream-border);border-radius:8px;color:var(--ink);font-size:12px;padding:6px 10px;font-family:'DM Sans',sans-serif;cursor:pointer}
+  .legend-row{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:var(--ink-mid);margin-bottom:5px;line-height:1.4}
+
+  /* MAP */
+  .map-wrap{flex:1;position:relative;overflow:hidden}
+  #map{width:100%;height:100%}
+  .search-bar{position:absolute;top:12px;left:12px;z-index:500;background:#fff;border:1px solid var(--cream-border);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-light);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+  /* DETAIL PANEL */
+  .detail-panel{width:230px;flex-shrink:0;border-left:1px solid var(--cream-border);background:#fff;display:flex;flex-direction:column;overflow-y:auto}
+  .detail-panel.empty{display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+  .detail-empty-msg{color:var(--ink-light);font-size:12px;line-height:1.6}
+  .dp-inner{padding:16px 14px;display:flex;flex-direction:column;gap:0;flex:1}
+  .dp-arr{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--ink-light);margin-bottom:3px}
+  .dp-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--ink);line-height:1.25;margin-bottom:10px}
+  .dp-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:10px;font-weight:500}
+  .badge-A{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+  .badge-B{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+  .badge-C{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+  .dp-trigger-label{font-size:10px;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink-light);margin-bottom:3px}
+  .dp-trigger{font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:500;line-height:1.4}
+  .dp-reason{font-size:12px;color:var(--ink-mid);line-height:1.6;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--cream-border)}
+  .dp-meta{font-size:11px;color:var(--ink-light);line-height:1.6;margin-bottom:14px}
+  .dp-div{height:1px;background:var(--cream-border);margin:12px -14px}
+  .vote-lbl{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px;font-weight:500}
+  .vbtns{display:flex;flex-direction:column;gap:4px}
+  .vbtn{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:8px;border:1px solid var(--cream-border);background:var(--cream);font-size:11px;color:var(--ink-mid);cursor:pointer;transition:all .12s;gap:6px}
+  .vbtn:hover{background:var(--cream-dark);border-color:var(--cream-border)}
+  .vbtn.voted-0{border-color:var(--green-border);background:var(--green-bg);color:var(--green)}
+  .vbtn.voted-1{border-color:var(--amber-border);background:var(--amber-bg);color:var(--amber)}
+  .vbtn.voted-2{border-color:var(--red-border);background:var(--red-bg);color:var(--red)}
+  .vcnt{font-size:10px;color:var(--ink-light);flex-shrink:0}
+  .vline{height:2px;background:var(--cream-dark);border-radius:1px;margin:1px 0 3px}
+  .vfill{height:2px;border-radius:1px;transition:width .3s}
+  .dp-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--cream-border);font-size:10px;color:var(--ink-light);line-height:1.5}
+
+  /* BOTTOMBAR */
+  .bottombar{height:32px;border-top:1px solid var(--cream-border);display:flex;align-items:center;padding:0 14px;gap:14px;background:var(--cream);flex-shrink:0}
+  .bs{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-mid)}
+  .bd{width:5px;height:5px;border-radius:50%}
+  .asterisk{margin-left:auto;font-size:10px;color:var(--ink-light);font-style:italic}
+
+  /* METHODO PAGE */
+  .methodo{display:none;flex:1;overflow-y:auto;padding:40px;background:var(--cream)}
+  .methodo.visible{display:block}
+  .methodo h1{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:6px;color:var(--ink)}
+  .methodo h1 em{color:var(--accent);font-style:normal}
+  .methodo .sub{font-size:14px;color:var(--ink-mid);font-style:italic;margin-bottom:32px}
+  .methodo h2{font-family:'DM Serif Display',serif;font-size:20px;margin:28px 0 10px;color:var(--ink);border-top:1px solid var(--cream-border);padding-top:20px}
+  .methodo p{font-size:13px;color:var(--ink-mid);line-height:1.8;margin-bottom:12px}
+  .methodo .cat-block{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid var(--cream-border);margin-bottom:10px;background:#fff}
+  .methodo .cat-pip{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .methodo .cat-title{font-weight:500;font-size:13px;margin-bottom:4px}
+  .methodo .cat-desc{font-size:12px;color:var(--ink-mid);line-height:1.6}
+  .methodo .rule-list{list-style:none;padding:0;margin:8px 0 0}
+  .methodo .rule-list li{font-size:12px;color:var(--ink-mid);padding:4px 0 4px 16px;position:relative;line-height:1.5}
+  .methodo .rule-list li::before{content:"→";position:absolute;left:0;color:var(--accent)}
+  .methodo .asterisk-note{font-size:11px;color:var(--ink-light);font-style:italic;margin-top:24px;padding-top:16px;border-top:1px solid var(--cream-border)}
+  .map-view{display:flex;flex:1;min-height:0}
+  .map-view.hidden{display:none}
+
+  /* LEAFLET overrides */
+  .leaflet-popup-content-wrapper{border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+  .leaflet-popup-tip{background:#fff}
+
+  /* Loading */
+  .loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--cream);z-index:999;gap:12px}
+  .loading-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink)}
+  .loading-sub{font-size:12px;color:var(--ink-light)}
+  .loading-bar{width:200px;height:2px;background:var(--cream-border);border-radius:1px;overflow:hidden}
+  .loading-fill{height:100%;background:var(--accent);border-radius:1px;animation:loadpulse 1.5s ease-in-out infinite}
+  @keyframes loadpulse{0%{width:0%}50%{width:70%}100%{width:100%}}
 </style>
 </head>
-
 <body>
+<div class="app" id="app">
 
-<div id="dashboard">
-    <h3>🐕 Dog Map Paris</h3>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">Paris <em>Hates</em> Dogs<sup>PHD</sup></div>
+    <div class="nav">
+      <div class="ntab on" id="tab-carte" onclick="showTab('carte')">La carte</div>
+      <div class="ntab" id="tab-methodo" onclick="showTab('methodo')">Notre méthode</div>
+    </div>
+    <div class="topbar-meta">Source paris.fr · màj 05/2026</div>
+  </div>
 
-    <p>🟢 Dog friendly: <span id="countA">0</span></p>
-    <p>🟡 Semi friendly: <span id="countB">0</span></p>
-    <p>🔴 Not dog friendly: <span id="countC">0</span></p>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Paris · Tous arrondissements · Données officielles Ville de Paris</div>
+    <div class="hero-title">Seulement <em id="score-pct">~10%</em> des espaces verts réellement utilisables avec un chien<em>*</em></div>
+    <div class="hero-sub">Pour les 90% restants, bonne chance — et l'amende à la clé.</div>
+  </div>
 
-    <hr>
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-num" id="stat-total">2 529</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--ink);width:100%"></div></div>
+      <div class="stat-desc">espaces verts analysés</div>
+      <div class="stat-sub">parcs, jardins, squares, voirie</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num muted" id="stat-A">260</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--green);width:10%"></div></div>
+      <div class="stat-desc">Dog friendly</div>
+      <div class="stat-sub stat-asterisk">selon notre analyse *</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num muted" id="stat-B">361</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--amber);width:14%"></div></div>
+      <div class="stat-desc">Semi dog friendly</div>
+      <div class="stat-sub stat-asterisk">selon notre analyse *</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num accent" id="stat-C">~10%</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="background:var(--red);width:10%"></div></div>
+      <div class="stat-desc">des espaces accessibles aux chiens</div>
+      <div class="stat-sub">Paris, championne de l'exclusion *</div>
+    </div>
+  </div>
 
-    <button onclick="toggle('A')">Toggle Dog Friendly</button>
-    <button onclick="toggle('B')">Toggle Semi</button>
-    <button onclick="toggle('C')">Toggle Not Friendly</button>
+  <!-- MAP VIEW -->
+  <div class="map-view" id="map-view">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div>
+        <div class="slabel">Filtrer</div>
+        <div class="pills">
+          <div class="pill on" id="pill-A" onclick="toggleFilter('A')">
+            <span class="pip" style="background:var(--green)"></span>Dog friendly
+            <span class="pcount" id="cnt-A">—</span>
+          </div>
+          <div class="pill on" id="pill-B" onclick="toggleFilter('B')">
+            <span class="pip" style="background:var(--amber)"></span>Semi dog friendly
+            <span class="pcount" id="cnt-B">—</span>
+          </div>
+          <div class="pill on" id="pill-C" onclick="toggleFilter('C')">
+            <span class="pip" style="background:var(--red)"></span>Not dog friendly
+            <span class="pcount" id="cnt-C">—</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="slabel">Arrondissement</div>
+        <select class="arr-sel" id="arr-select" onchange="filterArr()">
+          <option value="0">Tous les arrondissements</option>
+          <option value="1">1er arrondissement</option>
+          <option value="2">2e arrondissement</option>
+          <option value="3">3e arrondissement</option>
+          <option value="4">4e arrondissement</option>
+          <option value="5">5e arrondissement</option>
+          <option value="6">6e arrondissement</option>
+          <option value="7">7e arrondissement</option>
+          <option value="8">8e arrondissement</option>
+          <option value="9">9e arrondissement</option>
+          <option value="10">10e arrondissement</option>
+          <option value="11">11e arrondissement</option>
+          <option value="12">12e arrondissement</option>
+          <option value="13">13e arrondissement</option>
+          <option value="14">14e arrondissement</option>
+          <option value="15">15e arrondissement</option>
+          <option value="16">16e arrondissement</option>
+          <option value="17">17e arrondissement</option>
+          <option value="18">18e arrondissement</option>
+          <option value="19">19e arrondissement</option>
+          <option value="20">20e arrondissement</option>
+        </select>
+      </div>
+      <div>
+        <div class="slabel">Légende</div>
+        <div class="legend-row"><span class="pip" style="background:var(--green);margin-top:3px;flex-shrink:0"></span>Dog friendly — promenade continue possible</div>
+        <div class="legend-row"><span class="pip" style="background:var(--amber);margin-top:3px;flex-shrink:0"></span>Semi — usage contraint ou fragmenté</div>
+        <div class="legend-row"><span class="pip" style="background:var(--red);margin-top:3px;flex-shrink:0"></span>Not dog friendly — interdit ou inutilisable</div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="loading" id="loading">
+        <div class="loading-title">Paris <span style="color:var(--accent)">Hates</span> Dogs</div>
+        <div class="loading-sub">Chargement des espaces verts…</div>
+        <div class="loading-bar"><div class="loading-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="detail-panel empty" id="detail-panel">
+      <div class="detail-empty-msg">
+        <div style="font-size:24px;margin-bottom:8px">🐾</div>
+        Cliquez sur un espace<br>pour voir le détail
+      </div>
+    </div>
+  </div>
+
+  <!-- METHODO PAGE -->
+  <div class="methodo" id="methodo-page">
+    <h1>Notre <em>méthode</em></h1>
+    <div class="sub">Pourquoi les chiffres officiels de la Ville de Paris ne reflètent pas la réalité du terrain.</div>
+
+    <h2>Le problème avec les données officielles</h2>
+    <p>La Ville de Paris recense officiellement 165 parcs et jardins « ouverts aux chiens en laisse ». Ce chiffre, mis en avant sur paris.fr, omet une réalité évidente pour tout propriétaire de chien : être théoriquement autorisé ne signifie pas être réellement utilisable.</p>
+    <p>Un parc entièrement clôturé avec accès restreint aux seules allées bitumées, un square dominé par une aire de jeux interdite aux chiens, un jardin linéaire de voirie sans continuité réelle — tous figurent dans le comptage officiel. Notre analyse corrige cela.</p>
+
+    <h2>Notre taxonomie</h2>
+
+    <div class="cat-block">
+      <span class="cat-pip" style="background:var(--green)"></span>
+      <div>
+        <div class="cat-title">Dog friendly</div>
+        <div class="cat-desc">Espace réellement utilisable pour une promenade avec un chien. Continuité de marche possible, usage réel de parc, chien autorisé ou toléré, espace suffisant.</div>
+      </div>
+    </div>
+
+    <div class="cat-block">
+      <span class="cat-pip" style="background:var(--amber)"></span>
+      <div>
+        <div class="cat-title">Semi dog friendly</div>
+        <div class="cat-desc">Espace utilisable mais contraint. Accès restreint aux allées (grands parcs clôturés), fragmentation forte, forte fréquentation ou cohabitation d'usages incompatibles. Usage partiel seulement.</div>
+      </div>
+    </div>
+
+    <div class="cat-block">
+      <span class="cat-pip" style="background:var(--red)"></span>
+      <div>
+        <div class="cat-title">Not dog friendly</div>
+        <div class="cat-desc">Espace vert non utilisable avec un chien. Comprend les espaces à interdiction structurelle (aire de jeux dominante, cimetière, établissement scolaire), les espaces décoratifs de voirie (jardinières, murs végétalisés, terre-pleins), et les espaces trop fragmentés ou privatifs pour un usage réel.</div>
+      </div>
+    </div>
+
+    <h2>Les règles métier</h2>
+    <ul class="rule-list">
+      <li>Présence d'une aire de jeux dominante → Not dog friendly (interdit structurel)</li>
+      <li>Voirie végétalisée, jardinières, mails, terre-pleins → Not dog friendly (hors périmètre d'analyse)</li>
+      <li>Catégorie Promenade plantée → Dog friendly (continuité linéaire, usage réel)</li>
+      <li>Catégorie Parc clôturé → Semi dog friendly (accès restreint aux allées)</li>
+      <li>Absence de clôture hors promenade → Not dog friendly (continuité non garantie)</li>
+      <li>Square clôturé ≥ 3 000 m² → Dog friendly</li>
+      <li>Jardin clôturé ≥ 3 000 m² → Dog friendly</li>
+      <li>Square ou jardin clôturé entre 500 et 3 000 m² → Semi dog friendly</li>
+      <li>Cimetières, établissements scolaires, sportifs → Not dog friendly</li>
+      <li>Jardins privatifs, jardins d'immeubles → Not dog friendly</li>
+    </ul>
+
+    <h2>Les données</h2>
+    <p>Nous utilisons le jeu de données « Espaces verts et assimilés » publié par la Direction des Espaces Verts et de l'Environnement (DEVE) de la Ville de Paris, disponible sur opendata.paris.fr. Il recense 2 531 espaces verts publics gérés par la Ville, avec leurs attributs géographiques, leur type, leur surface et la présence ou non d'une clôture.</p>
+    <p>Pour les 287 espaces sans information sur la clôture, nous déduisons la classification depuis le contexte : nom, type d'espace, surface, et voisinage immédiat. Les cas ambigus sont traités de façon conservatrice (Not dog friendly par défaut).</p>
+
+    <div class="asterisk-note">* Les chiffres affichés (260 Dog friendly, 361 Semi dog friendly, ~10%) sont calculés selon notre méthodologie propre et non selon le référentiel officiel de la Ville de Paris. Ils sont susceptibles d'évoluer avec les mises à jour des données sources.</div>
+  </div>
+
+  <!-- BOTTOMBAR -->
+  <div class="bottombar">
+    <div class="bs"><span class="bd" style="background:var(--green)"></span><span id="bt-A">Dog friendly · 260</span></div>
+    <div class="bs"><span class="bd" style="background:var(--amber)"></span><span id="bt-B">Semi · 361</span></div>
+    <div class="bs"><span class="bd" style="background:var(--red)"></span><span id="bt-C">Not dog friendly · 1 908</span></div>
+    <div class="asterisk">* Calculés selon notre méthodologie</div>
+  </div>
 </div>
 
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
+const CAT_COLORS = {A:'#3d7a38', B:'#b87010', C:'#c0341c'};
+const CAT_LABELS = {A:'Dog friendly', B:'Semi dog friendly', C:'Not dog friendly'};
+const ARR_LABELS = {0:'',1:'1er',2:'2e',3:'3e',4:'4e',5:'5e',6:'6e',7:'7e',8:'8e',9:'9e',10:'10e',11:'11e',12:'12e',13:'13e',14:'14e',15:'15e',16:'16e',17:'17e',18:'18e',19:'19e',20:'20e'};
 
-// ---------------- MAP ----------------
-const map = L.map('map').setView([48.8566, 2.3522], 12);
+let allData = [];
+let markers = {};
+let activeFilters = {A:true, B:true, C:true};
+let activeArr = 0;
+let map;
+let votes = JSON.parse(localStorage.getItem('phd_votes') || '{}');
+let voteCounts = JSON.parse(localStorage.getItem('phd_vote_counts') || '{}');
+let selectedId = null;
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+async function init() {
+  map = L.map('map', {
+    center: [48.8566, 2.3522],
+    zoom: 12,
+    zoomControl: true,
+    attributionControl: false
+  });
 
-// ---------------- LAYERS ----------------
-const layers = {
-    A: L.layerGroup().addTo(map),
-    B: L.layerGroup().addTo(map),
-    C: L.layerGroup().addTo(map)
-};
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19
+  }).addTo(map);
 
-// ---------------- STRICT TAXONOMY ----------------
-function classify(p) {
-
-    const isRoad = p.type === "voirie" || p.type === "terre_plein" || p.type === "mail";
-    const hasPlayground = p.aire_de_jeux === true;
-    const hasDogZone = p.zone_canin === true;
-    const restricted = p.restrictions_fortes === true;
-    const allowed = p.chien_autorise === true;
-
-    // 🔴 RULE 1: playground = ALWAYS NOT DOG FRIENDLY
-    if (hasPlayground) return "C";
-
-    // 🔴 RULE 2: road / decorative spaces
-    if (isRoad) return "C";
-
-    // 🟡 RULE 3: constrained spaces
-    if (restricted) return "B";
-
-    // 🟢 RULE 4: dog allowed or dog zone
-    if (allowed || hasDogZone) return "A";
-
-    // 🔴 default fallback
-    return "C";
-}
-
-// ---------------- COLORS ----------------
-function color(cat) {
-    return {
-        A: "#2ecc71",
-        B: "#f39c12",
-        C: "#e74c3c"
-    }[cat];
-}
-
-// ---------------- DATA FETCH ----------------
-fetch("https://opendata.paris.fr/api/records/1.0/search/?dataset=espaces_verts&rows=5000")
-.then(r => r.json())
-.then(data => {
-
-    data.records.forEach(r => {
-
-        if (!r.geometry) return;
-
-        const p = r.fields;
-        const cat = classify(p);
-
-        const coords = [
-            r.geometry.coordinates[1],
-            r.geometry.coordinates[0]
-        ];
-
-        const marker = L.circleMarker(coords, {
-            radius: 5,
-            color: color(cat),
-            fillColor: color(cat),
-            fillOpacity: 0.75
-        });
-
-        marker.bindPopup(`
-            <b>${p.nom || "Sans nom"}</b><br>
-            Catégorie : ${cat}
-        `);
-
-        layers[cat].addLayer(marker);
-    });
-
+  try {
+    const resp = await fetch('phd_data.json');
+    allData = await resp.json();
+    buildMarkers();
     updateStats();
-});
-
-// ---------------- DASHBOARD ----------------
-function updateStats() {
-    document.getElementById("countA").innerText = layers.A.getLayers().length;
-    document.getElementById("countB").innerText = layers.B.getLayers().length;
-    document.getElementById("countC").innerText = layers.C.getLayers().length;
+    document.getElementById('loading').style.display = 'none';
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div style="color:#c0341c;font-size:13px;padding:20px;text-align:center">Erreur de chargement des données.<br>Vérifiez que phd_data.json est dans le même dossier.</div>';
+  }
 }
 
-// ---------------- TOGGLE ----------------
-function toggle(cat) {
-    if (map.hasLayer(layers[cat])) {
-        map.removeLayer(layers[cat]);
+function buildMarkers() {
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+
+  allData.forEach(ev => {
+    const color = CAT_COLORS[ev.cat_phd];
+    const m = L.circleMarker([ev.lat, ev.lon], {
+      radius: 5,
+      fillColor: color,
+      color: '#fff',
+      weight: 1,
+      fillOpacity: 0.85
+    });
+    m.on('click', () => showDetail(ev));
+    markers[ev.id] = m;
+    if (shouldShow(ev)) m.addTo(map);
+  });
+}
+
+function shouldShow(ev) {
+  if (!activeFilters[ev.cat_phd]) return false;
+  if (activeArr !== 0 && ev.arr !== activeArr) return false;
+  return true;
+}
+
+function renderMarkers() {
+  allData.forEach(ev => {
+    const m = markers[ev.id];
+    if (!m) return;
+    if (shouldShow(ev)) {
+      if (!map.hasLayer(m)) m.addTo(map);
     } else {
-        map.addLayer(layers[cat]);
+      if (map.hasLayer(m)) map.removeLayer(m);
     }
+  });
+  updateCounts();
 }
 
-</script>
+function toggleFilter(cat) {
+  activeFilters[cat] = !activeFilters[cat];
+  const pill = document.getElementById('pill-' + cat);
+  pill.classList.toggle('on', activeFilters[cat]);
+  pill.classList.toggle('off', !activeFilters[cat]);
+  renderMarkers();
+}
 
+function filterArr() {
+  activeArr = parseInt(document.getElementById('arr-select').value);
+  renderMarkers();
+  if (activeArr !== 0) {
+    const arrData = allData.filter(ev => ev.arr === activeArr);
+    if (arrData.length > 0) {
+      const lats = arrData.map(e => e.lat);
+      const lons = arrData.map(e => e.lon);
+      map.fitBounds([[Math.min(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]], {padding:[30,30]});
+    }
+  } else {
+    map.setView([48.8566, 2.3522], 12);
+  }
+}
+
+function updateStats() {
+  const total = allData.length;
+  const nA = allData.filter(e => e.cat_phd === 'A').length;
+  const nB = allData.filter(e => e.cat_phd === 'B').length;
+  const nC = allData.filter(e => e.cat_phd === 'C').length;
+  const pct = Math.round(nA / total * 100);
+
+  document.getElementById('stat-total').textContent = total.toLocaleString('fr-FR');
+  document.getElementById('stat-A').textContent = nA.toLocaleString('fr-FR');
+  document.getElementById('stat-B').textContent = nB.toLocaleString('fr-FR');
+  document.getElementById('stat-C').textContent = '~' + pct + '%';
+  document.getElementById('score-pct').textContent = '~' + pct + '%';
+  document.getElementById('hero-sub-pct') && (document.getElementById('hero-sub-pct').textContent = (100-pct) + '%');
+
+  document.getElementById('bt-A').textContent = 'Dog friendly · ' + nA;
+  document.getElementById('bt-B').textContent = 'Semi · ' + nB;
+  document.getElementById('bt-C').textContent = 'Not dog friendly · ' + nC;
+
+  document.getElementById('cnt-A').textContent = nA;
+  document.getElementById('cnt-B').textContent = nB;
+  document.getElementById('cnt-C').textContent = nC;
+}
+
+function updateCounts() {
+  const visible = allData.filter(shouldShow);
+  const nA = visible.filter(e => e.cat_phd === 'A').length;
+  const nB = visible.filter(e => e.cat_phd === 'B').length;
+  const nC = visible.filter(e => e.cat_phd === 'C').length;
+  document.getElementById('cnt-A').textContent = nA;
+  document.getElementById('cnt-B').textContent = nB;
+  document.getElementById('cnt-C').textContent = nC;
+}
+
+function showDetail(ev) {
+  selectedId = ev.id;
+  const panel = document.getElementById('detail-panel');
+  panel.classList.remove('empty');
+
+  const arrLabel = ev.arr ? `Paris ${ARR_LABELS[ev.arr]} arrondissement` : '';
+  const surfaceStr = ev.surface ? `${Math.round(ev.surface).toLocaleString('fr-FR')} m²` : 'Surface non renseignée';
+  const clotureStr = ev.cloture === 'Oui' ? 'Clôturé' : ev.cloture === 'Non' ? 'Non clôturé' : '';
+
+  // Vote data
+  const key = 'ev_' + ev.id;
+  if (!voteCounts[key]) voteCounts[key] = [0,0,0];
+  const myVote = votes[key] !== undefined ? votes[key] : -1;
+  const vc = voteCounts[key];
+  const total = vc[0]+vc[1]+vc[2];
+
+  const voteLabels = ['Je reviendrai', 'Je reviendrai faute de mieux', 'Je ne reviendrai pas'];
+  const voteColors = ['var(--green)','var(--amber)','var(--red)'];
+  const voteClasses = ['voted-0','voted-1','voted-2'];
+
+  let votesHTML = voteLabels.map((lbl, i) => {
+    const pct = total > 0 ? Math.round(vc[i]/total*100) : 0;
+    const cls = myVote === i ? voteClasses[i] : '';
+    return `
+      <div class="vbtn ${cls}" onclick="castVote(${ev.id},${i})">
+        <span>${lbl}</span><span class="vcnt">${vc[i]}</span>
+      </div>
+      <div class="vline"><div class="vfill" style="background:${voteColors[i]};width:${pct}%"></div></div>
+    `;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="dp-inner">
+      <div class="dp-arr">${arrLabel}</div>
+      <div class="dp-name">${capitalise(ev.nom)}</div>
+      <span class="dp-badge badge-${ev.cat_phd}">
+        <span class="pip" style="background:${CAT_COLORS[ev.cat_phd]};width:6px;height:6px;border-radius:50%;display:inline-block"></span>
+        ${CAT_LABELS[ev.cat_phd]}
+      </span>
+      <div class="dp-trigger-label">Critère déclencheur</div>
+      <div class="dp-trigger">${ev.reason.split('—')[0].trim()}</div>
+      <div class="dp-reason">${ev.reason}</div>
+      <div class="dp-meta">
+        ${surfaceStr}${clotureStr ? ' · ' + clotureStr : ''}
+        ${ev.categorie ? ' · ' + capitalise(ev.categorie) : ''}
+      </div>
+      <div class="dp-div"></div>
+      <div class="vote-lbl">Vous y retourneriez ?</div>
+      <div class="vbtns">${votesHTML}</div>
+      ${total > 0 ? `<div class="dp-foot" style="margin-top:10px">${total} vote${total>1?'s':''}</div>` : ''}
+    </div>
+  `;
+
+  // Pan map
+  map.panTo([ev.lat, ev.lon]);
+}
+
+function castVote(id, voteIdx) {
+  const key = 'ev_' + id;
+  if (!voteCounts[key]) voteCounts[key] = [0,0,0];
+  const prev = votes[key];
+  if (prev !== undefined) voteCounts[key][prev]--;
+  votes[key] = voteIdx;
+  voteCounts[key][voteIdx]++;
+  localStorage.setItem('phd_votes', JSON.stringify(votes));
+  localStorage.setItem('phd_vote_counts', JSON.stringify(voteCounts));
+  const ev = allData.find(e => e.id === id);
+  if (ev) showDetail(ev);
+}
+
+function capitalise(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function showTab(tab) {
+  document.getElementById('tab-carte').classList.toggle('on', tab==='carte');
+  document.getElementById('tab-methodo').classList.toggle('on', tab==='methodo');
+  document.getElementById('map-view').classList.toggle('hidden', tab!=='carte');
+  document.getElementById('methodo-page').classList.toggle('visible', tab==='methodo');
+  if (tab==='carte') setTimeout(()=>map.invalidateSize(), 50);
+}
+
+init();
+</script>
 </body>
 </html>
