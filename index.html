@@ -178,7 +178,7 @@
     .body{flex-direction:column;overflow:visible;height:auto;flex:none}
     .sidebar{display:none}
     .detail-panel{display:none!important}
-    .map-view{display:none}
+    .map-view.m-hidden{display:none!important}
     .bottombar{display:none}
     .map-view{flex-direction:column;flex:none;height:auto}
     .map-wrap{height:52vw;min-height:220px;max-height:320px;flex:none;position:relative;order:2}
@@ -583,7 +583,7 @@ async function init() {
     updateStats();
     document.getElementById('loading').style.display = 'none';
     if(window.innerWidth <= 768){
-      document.querySelector('.map-wrap').classList.add('m-map-hidden');
+      document.getElementById('map-view').classList.add('m-hidden');
     }
   } catch(e) {
     document.getElementById('loading').innerHTML = '<div style="color:#c0341c;font-size:13px;padding:20px;text-align:center">Erreur de chargement des données.<br>Vérifiez que phd_data.json est dans le même dossier.</div>';
