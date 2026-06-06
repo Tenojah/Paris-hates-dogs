@@ -147,15 +147,22 @@
 
   /* ── MOBILE ── */
   .bottom-sheet{
-    display:none;position:fixed;bottom:0;left:0;right:0;
-    background:#fff;border-radius:16px 16px 0 0;
+    display:none;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:#fff;
+    border-radius:16px 16px 0 0;
     border-top:1px solid var(--cream-border);
-    padding:12px 16px 40px;z-index:2000;
-    max-height:80vh;overflow-y:auto;
+    padding:12px 16px env(safe-area-inset-bottom,16px);
+    z-index:2000;
+    max-height:calc(100dvh - 80px);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    box-shadow:0 -4px 24px rgba(0,0,0,.08);
   }
   .bottom-sheet.open{display:block}
-  .bs-handle{width:36px;height:4px;border-radius:2px;background:var(--cream-border);margin:0 auto 12px;cursor:pointer}
-  .bs-close{position:absolute;top:12px;right:16px;font-size:20px;color:var(--ink-light);cursor:pointer;background:none;border:none;line-height:1}
+  .bs-handle{width:36px;height:4px;border-radius:2px;background:var(--cream-border);margin:0 auto 10px;cursor:pointer}
+  .bs-close{position:absolute;top:10px;right:14px;font-size:20px;color:var(--ink-light);cursor:pointer;background:none;border:none;line-height:1;padding:4px}
 
   .m-filterbar{display:none}
   .m-list{display:none}
@@ -170,7 +177,8 @@
     .stats-row{display:none}
     .body{flex-direction:column;overflow:visible;height:auto;flex:none}
     .sidebar{display:none}
-    .detail-panel{display:none}
+    .detail-panel{display:none!important}
+    .map-view{display:none}
     .bottombar{display:none}
     .map-view{flex-direction:column;flex:none;height:auto}
     .map-wrap{height:52vw;min-height:220px;max-height:320px;flex:none;position:relative;order:2}
@@ -227,6 +235,10 @@
     .m-item-name{font-size:13px;color:var(--ink);font-weight:500;flex:1;line-height:1.3}
     .m-item-arr{font-size:11px;color:var(--ink-light);flex-shrink:0}
     .m-list-empty{padding:24px 14px;text-align:center;font-size:12px;color:var(--ink-light);font-style:italic}
+    .m-item-tag{font-size:10px;padding:2px 7px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+    .tag-A{background:var(--green-bg);color:var(--green)}
+    .tag-B{background:var(--amber-bg);color:var(--amber)}
+    .tag-C{background:var(--red-bg);color:var(--red)}
     .m-map-hidden{display:none!important}
   }
 
@@ -671,10 +683,13 @@ function renderMobileList() {
     const order = {A:0, B:1, C:2};
     return order[a.cat_phd] - order[b.cat_phd] || a.arr - b.arr;
   });
+  const tagClass = {A:'tag-A', B:'tag-B', C:'tag-C'};
+  const tagLabel = {A:'Dog friendly', B:'Semi', C:'Non admis'};
   container.innerHTML = sorted.slice(0,200).map(ev => `
     <div class="m-list-item" onclick="openFromList(${ev.id})">
       <span class="m-item-pip" style="background:${CAT_COLORS[ev.cat_phd]}"></span>
       <span class="m-item-name">${capitalise(ev.nom)}</span>
+      <span class="m-item-tag ${tagClass[ev.cat_phd]}">${tagLabel[ev.cat_phd]}</span>
       <span class="m-item-arr">${ev.arr ? ev.arr + 'e' : ''}</span>
     </div>
   `).join('') + (sorted.length > 200 ? '<div class="m-list-empty">+ ' + (sorted.length-200) + ' autres — affinez avec les filtres.</div>' : '');
