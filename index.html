@@ -178,9 +178,9 @@
     .body{flex-direction:column;overflow:visible;height:auto;flex:none}
     .sidebar{display:none}
     .detail-panel{display:none!important}
-    .map-view.m-hidden{display:none!important}
     .bottombar{display:none}
-    .map-view{flex-direction:column;flex:none;height:auto}
+    .map-view{display:none;flex-direction:column;flex:none;height:auto}
+    .map-view.m-visible{display:flex!important}
     .map-wrap{height:52vw;min-height:220px;max-height:320px;flex:none;position:relative;order:2}
     #map{width:100%;height:100%}
     .m-filterbar{display:flex}
@@ -582,9 +582,8 @@ async function init() {
     renderMarkers();
     updateStats();
     document.getElementById('loading').style.display = 'none';
-    if(window.innerWidth <= 768){
-      document.getElementById('map-view').classList.add('m-hidden');
-    }
+    // On mobile, map-view is hidden by default via CSS (display:none)
+    // No JS needed — toggleMobileMap() adds m-visible when user taps Carte
   } catch(e) {
     document.getElementById('loading').innerHTML = '<div style="color:#c0341c;font-size:13px;padding:20px;text-align:center">Erreur de chargement des données.<br>Vérifiez que phd_data.json est dans le même dossier.</div>';
   }
@@ -652,16 +651,16 @@ function syncArrMobile() {
 let mobileMapVisible = false;
 function toggleMobileMap() {
   mobileMapVisible = !mobileMapVisible;
-  const wrap = document.querySelector('.map-wrap');
+  const mapView = document.getElementById('map-view');
   const btn = document.getElementById('mf-toggle-map');
   if(mobileMapVisible){
-    wrap.classList.remove('m-map-hidden');
+    mapView.classList.add('m-visible');
     btn.style.background = 'var(--ink)';
     btn.style.color = '#fff';
     btn.style.borderColor = 'var(--ink)';
-    setTimeout(()=>{ if(map) map.invalidateSize(); }, 100);
+    setTimeout(()=>{ if(map) map.invalidateSize(); }, 150);
   } else {
-    wrap.classList.add('m-map-hidden');
+    mapView.classList.remove('m-visible');
     btn.style.background = '';
     btn.style.color = '';
     btn.style.borderColor = '';
