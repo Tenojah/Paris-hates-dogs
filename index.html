@@ -128,7 +128,7 @@ html,body{height:100%;font-family:'Figtree','DM Sans',sans-serif;color-scheme:li
 
 /* ── MAP VIEW WRAPPER ── */
 .map-view{display:flex;flex:1;min-height:0}
-.map-view.hidden{display:none}
+.map-view.hidden{display:none!important}
 
 /* ── METHODO ── */
 .methodo{display:block;flex:1;overflow-y:auto;padding:40px 48px;background:var(--cream);max-width:780px;margin:0 auto;width:100%}
@@ -206,7 +206,7 @@ html,body{height:100%;font-family:'Figtree','DM Sans',sans-serif;color-scheme:li
   .detail-panel{display:none!important}
   .bottombar{display:none}
   .map-view{display:none;flex-direction:column;flex:none;height:auto}
-  .map-view.m-visible{display:flex!important}
+  .map-view.m-visible:not(.hidden){display:flex!important}
   .map-wrap{height:72vw;min-height:260px;max-height:440px;flex:none;position:relative}
   #map{width:100%;height:100%}
   .m-filterbar{
