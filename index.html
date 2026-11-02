@@ -207,7 +207,7 @@ html,body{height:100%;font-family:'Figtree','DM Sans',sans-serif;color-scheme:li
   .bottombar{display:none}
   .map-view{display:none;flex-direction:column;flex:none;height:auto}
   .map-view.m-visible{display:flex!important}
-  .map-wrap{height:55vw;min-height:220px;max-height:340px;flex:none;position:relative}
+  .map-wrap{height:72vw;min-height:260px;max-height:440px;flex:none;position:relative}
   #map{width:100%;height:100%}
   .m-filterbar{
     display:flex;flex-wrap:wrap;gap:6px;align-items:center;
@@ -366,6 +366,7 @@ body.on-methodo .m-filterbar,body.on-methodo .m-list{display:none!important}
   .ntab{padding:9px 13px}
   .mf-toggle-map{margin-left:0!important;order:-1;padding:7px 14px!important;border-radius:20px;font-size:12px;font-weight:800!important;box-shadow:0 1px 3px rgba(13,43,51,.15)}
 }
+.z-low .phd-ico svg{transform:scale(.5);transform-origin:center}.z-mid .phd-ico svg{transform:scale(.75);transform-origin:center}
 </style>
 </head>
 <body>
@@ -707,12 +708,21 @@ async function init(){
   document.getElementById('loading').style.display='none';
   if(typeof L==='undefined'){console.error('Leaflet indisponible');return;}
   try{
-    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomControl:true,attributionControl:true});
+    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomSnap:0.25,zoomControl:true,attributionControl:true});
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,attribution:'Tiles © Esri — Esri, HERE, Garmin, OpenStreetMap contributors'}).addTo(map);
     try{L.geoJSON(window.PARIS_GEO,{interactive:false,style:{color:'#9fd3db',weight:1,fillColor:'#fbfeff',fillOpacity:1}}).addTo(map);}catch(e){}
     window.addEventListener('resize',()=>{if(map)map.invalidateSize();});
+    const zc=()=>{const c=map.getContainer();c.classList.toggle('z-low',map.getZoom()<11.75);c.classList.toggle('z-mid',map.getZoom()>=11.75&&map.getZoom()<13);};
+    map.on('zoomend',zc);zc();
     buildMarkers();
     renderMarkers();
+    if(window.matchMedia('(max-width:768px)').matches){
+      mobileMapVisible=true;
+      document.getElementById('map-view').classList.add('m-visible');
+      const btn=document.getElementById('mf-toggle-map');
+      btn.style.background='var(--ink)';btn.style.color='#fff';btn.style.borderColor='var(--ink)';
+      setTimeout(()=>{map.invalidateSize();map.fitBounds([[48.812,2.222],[48.905,2.472]],{padding:[4,4],animate:false});zc();},60);
+    }
   }catch(e){console.error(e);}
 }
 
