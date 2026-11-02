@@ -1,0 +1,3 @@
+Dossier prêt à déposer sur Netlify (glisser-déposer du dossier entier).
+Adresse du site déjà renseignée : https://paris-hates-dogs.netlify.app
+Fichiers : index.html (site), og-image.png (vignette de partage 1200x630), logo.png.
