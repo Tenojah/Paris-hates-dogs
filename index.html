@@ -491,7 +491,7 @@ html,body{overflow-x:hidden;max-width:100%}
   <div class="mf-pill on" id="mpill-A" onclick="toggleFilter('A')"><svg class="pi" style="color:#1fb36f"><use href="#pdog"/></svg>Espaces canins</div>
   <div class="mf-pill on" id="mpill-Ab" onclick="toggleFilter('Ab')"><svg class="pi" style="color:#1fb36f"><use href="#pbois"/></svg>Bois</div>
   <div class="mf-pill on" id="mpill-B" onclick="toggleFilter('B')"><svg class="pi" style="color:#f28c28"><use href="#ptag"/></svg>Semi</div>
-  <div class="mf-pill on" id="mpill-C" onclick="toggleFilter('C')"><svg class="pi" style="color:#e5484d"><use href="#pfine"/></svg>Non admis</div>
+  <div class="mf-pill on" id="mpill-C" onclick="toggleFilter('C')"><svg class="pi" style="color:#e5484d"><use href="#pfine"/></svg>Not dog friendly</div>
   <div class="mf-pill on" id="mpill-F" onclick="toggleFilter('F')"><svg class="pi" style="color:#9db3ba"><use href="#pgray"/></svg>Faux espaces</div>
   <div class="mf-arr"><select id="arr-select-mobile" onchange="syncArrMobile()">
     <option value="0">Tous</option>
@@ -1061,7 +1061,7 @@ function renderMobileList(){
   const order={A:0,B:1,C:2,F:3};
   const sorted=[...items].sort((a,b)=>order[a.cat_phd]-order[b.cat_phd]||a.arr-b.arr);
   const tagClass={A:'m-tag-A',B:'m-tag-B',C:'m-tag-C',F:'m-tag-F'};
-  const tagLabel={A:'Dog friendly',B:'Semi',C:'Non admis',F:'Faux espace'};
+  const tagLabel={A:'Dog friendly',B:'Semi',C:'Not dog friendly',F:'Faux espace'};
   container.innerHTML=sorted.slice(0,200).map(ev=>`
     <div class="m-list-item" onclick="openFromList(${ev.id})">
       ${iconSVG(ev.cat_phd,18)}
