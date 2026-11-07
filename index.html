@@ -746,6 +746,7 @@ const CAT_LABELS = {A:'Dog friendly', B:'Semi dog friendly', C:'Not dog friendly
 const ARR_LABELS = {0:'',1:'1er',2:'2e',3:'3e',4:'4e',5:'5e',6:'6e',7:'7e',8:'8e',9:'9e',10:'10e',11:'11e',12:'12e',13:'13e',14:'14e',15:'15e',16:'16e',17:'17e',18:'18e',19:'19e',20:'20e'};
 
 let allData=[], markers={}, map;
+const PARIS_MAXB=[[48.808,2.205],[48.915,2.495]];
 let activeFilters={A:true,Ab:true,B:true,C:true,F:true};const GOLD='#d9a406';
 let activeArr=0;
 let votes=JSON.parse(localStorage.getItem('phd_votes')||'{}');
@@ -776,8 +777,9 @@ async function init(){
   document.getElementById('loading').style.display='none';
   if(typeof L==='undefined'){console.error('Leaflet indisponible');return;}
   try{
-    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomSnap:0.25,zoomControl:true,attributionControl:true,minZoom:11.5,maxBounds:[[48.79,2.17],[48.93,2.52]],maxBoundsViscosity:1.0});
+    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomSnap:0.25,zoomControl:true,attributionControl:true,minZoom:11.5,maxBounds:PARIS_MAXB,maxBoundsViscosity:1.0});
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,attribution:'Tiles © Esri — Esri, HERE, Garmin, OpenStreetMap contributors'}).addTo(map);
+    try{const fitZ=()=>{const z=map.getBoundsZoom(PARIS_MAXB,false);const q=Math.ceil(z*4)/4;map.setMinZoom(Math.max(11.5,q));if(map.getZoom()<map.getMinZoom())map.setZoom(map.getMinZoom());};fitZ();window.addEventListener('resize',()=>setTimeout(fitZ,60));}catch(e){}
     try{L.geoJSON(window.PARIS_GEO,{interactive:false,style:{color:'#9fd3db',weight:1,fillColor:'#fbfeff',fillOpacity:1}}).addTo(map);}catch(e){}
     window.addEventListener('resize',()=>{if(map)map.invalidateSize();});
     const zc=()=>{const c=map.getContainer();c.classList.toggle('z-low',map.getZoom()<11.75);c.classList.toggle('z-mid',map.getZoom()>=11.75&&map.getZoom()<13);};
