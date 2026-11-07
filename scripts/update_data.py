@@ -63,7 +63,7 @@ def to_entry(rec):
     t = pick(rec, "type_ev") or ""
     cat = "F" if t in F_TYPES else DEFAULT_CAT
     reason = ("Voirie, décoration ou infrastructure non utilisable" if cat == "F"
-              else "Non référencé sur paris.fr — chiens non admis par défaut")
+              else "Non référencé sur paris.fr — aucune admission des chiens mentionnée, classé par défaut")
     return {"id": pick(rec, "id"), "nom": pick(rec, "nom"), "arr": arr_of(pick(rec, "arr")),
             "type_ev": t, "categorie": pick(rec, "categorie") or "", "surface": pick(rec, "surface"),
             "cloture": pick(rec, "cloture") or "", "lat": lat, "lon": lon, "cat_phd": cat,
