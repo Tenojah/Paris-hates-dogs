@@ -1,0 +1,30 @@
+name: Mise à jour mensuelle des données
+on:
+  schedule:
+    - cron: "17 5 1 * *"   # le 1er de chaque mois, 05h17 UTC
+  workflow_dispatch:       # lancement manuel : onglet Actions > Run workflow
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Mise à jour depuis l'Open Data Paris
+        run: python scripts/update_data.py
+      - name: Ouvrir une pull request si les données ont changé
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- phd_data.json index.html; then echo "Aucun changement."; exit 0; fi
+          BR="maj-donnees-$(date +%Y-%m-%d)"
+          git config user.name "phd-bot"; git config user.email "phd-bot@users.noreply.github.com"
+          git checkout -b "$BR"
+          git add phd_data.json index.html
+          git commit -m "Mise à jour des données Open Data Paris"
+          git push origin "$BR"
+          gh pr create --title "Mise à jour des données ($(date +%d/%m/%Y))" --body-file rapport.md --base main --head "$BR"
