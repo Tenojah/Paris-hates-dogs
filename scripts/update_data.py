@@ -2,6 +2,7 @@
 """Mise à jour mensuelle des données PHD depuis l'Open Data Paris.
 
 Règles (voir la méthodologie du site) :
+- Base de départ : le jeu de données inline de index.html (phd_data.json en est une copie régénérée).
 - Les entrées dont source != "auto" (A, B, F manuels, fiches paris.fr...) ne sont JAMAIS modifiées.
 - Les entrées source == "auto" sont rafraîchies ; leur catégorie suit le type_ev (F ou C).
 - Les nouveaux espaces sont ajoutés en "auto" (C ou F) et listés dans le rapport pour relecture.
@@ -72,7 +73,10 @@ def key(e):  # l'id 0 est partagé par plusieurs entrées : on ajoute le nom
     return (e["id"], norm(e["nom"])) if not e["id"] else (e["id"],)
 
 def main():
-    data = json.load(open("phd_data.json", encoding="utf-8"))
+    # La source de vérité est le jeu de données écrit dans index.html (c'est ce que lit le site).
+    html0 = open("index.html", encoding="utf-8").read()
+    a = html0.index("window.PHD_DATA="); b = html0.index("];", a) + 1
+    data = json.loads(html0[a + len("window.PHD_DATA="):b])
     raw = fetch()
     if len(raw) < MIN_RECORDS:
         sys.exit(f"Abandon : seulement {len(raw)} enregistrements (minimum {MIN_RECORDS}).")
