@@ -14,12 +14,13 @@ API = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/espaces_verts
 MIN_RECORDS = 2000  # garde-fou : un export tronqué ne doit jamais écraser les données
 
 # type_ev -> catégorie PHD, déduit des 2 400 entrées auto existantes
-F_TYPES = {"Décorations sur la voie publique", "Murs végétalisés", "Périphérique",
+# (« Végétalisation d'espace public » = nouveau nom des « Décorations sur la voie publique » dans l'Open Data, nov. 2026)
+F_TYPES = {"Décorations sur la voie publique", "Végétalisation d'espace public", "Murs végétalisés", "Périphérique",
            "Jardinets décoratifs", "Cimetières"}
 DEFAULT_CAT = "C"  # tout ce qui n'est pas référencé comme autorisé reste C
 
 CANDIDATES = {
-    "id": ["id_ev", "identifiant", "id", "ida3d_enb", "objectid"],
+    "id": ["nsq_espace_vert", "id_ev", "identifiant", "id", "objectid"],
     "nom": ["nom_ev", "nom"],
     "type_ev": ["type_ev"],
     "categorie": ["categorie"],

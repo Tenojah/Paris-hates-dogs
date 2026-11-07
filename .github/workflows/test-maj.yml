@@ -13,23 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Inspecter les vraies données
+      - name: Lancer le script sur les vraies données
         run: |
-          python - <<'PY'
-          import json,sys,collections,unicodedata
-          sys.path.insert(0,'scripts')
-          import update_data as u
-          raw=u.fetch()
-          print("N=",len(raw)); print("CHAMPS=",sorted(raw[0]))
-          for r in raw[:2]: print("REC=",json.dumps(r,ensure_ascii=False)[:700])
-          print("TYPES=",collections.Counter(r.get('type_ev') for r in raw).most_common())
-          print("CATEG=",collections.Counter(r.get('categorie') for r in raw).most_common(12))
-          ours=json.load(open('phd_data.json'))
-          n=lambda s:unicodedata.normalize('NFKD',str(s or '')).encode('ascii','ignore').decode().lower().strip()
-          rn=collections.Counter(n(u.pick(r,'nom')) for r in raw)
-          on=collections.Counter(n(e['nom']) for e in ours)
-          print("NOMS communs:",sum((rn&on).values()),"nos noms:",sum(on.values()),"leurs noms:",sum(rn.values()))
-          rid={str(u.pick(r,'id')) for r in raw}; print("IDs communs:",len(rid&{str(e['id']) for e in ours}))
-          for k in ['id_ev','identifiant','id','ida3d_enb','objectid']:
-              if k in raw[0]: print("ID",k,"communs:",len({str(r[k]) for r in raw}&{str(e['id']) for e in ours}))
-          PY
+          python scripts/update_data.py > /dev/null || echo "ECHEC DU SCRIPT"
+          echo "=== RAPPORT ==="; cat rapport.md | head -400
