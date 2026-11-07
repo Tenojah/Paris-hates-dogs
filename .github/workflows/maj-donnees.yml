@@ -21,7 +21,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet -- phd_data.json index.html; then echo "Aucun changement."; exit 0; fi
-          BR="maj-donnees-$(date +%Y-%m-%d)"
+          BR="maj-donnees-$(date +%Y-%m-%d-%H%M)"
           git config user.name "phd-bot"; git config user.email "phd-bot@users.noreply.github.com"
           git checkout -b "$BR"
           git add phd_data.json index.html
