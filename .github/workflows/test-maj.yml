@@ -1,0 +1,20 @@
+name: Test mise à jour (simulation, ne publie rien)
+on:
+  push:
+    branches: [maj-auto-donnees]
+    paths: [".github/workflows/test-maj.yml", "scripts/update_data.py"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lancer le script sur les vraies données
+        run: |
+          python scripts/update_data.py || echo "ECHEC DU SCRIPT"
+          echo "=== RAPPORT ==="; cat rapport.md 2>/dev/null | head -150
+          echo "=== DIFF STAT ==="; git diff --stat -- phd_data.json index.html || true
