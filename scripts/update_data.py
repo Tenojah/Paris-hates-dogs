@@ -19,6 +19,7 @@ MIN_RECORDS = 2000  # garde-fou : un export tronqué ne doit jamais écraser les
 F_TYPES = {"Décorations sur la voie publique", "Végétalisation d'espace public", "Murs végétalisés", "Périphérique",
            "Jardinets décoratifs", "Cimetières"}
 DEFAULT_CAT = "C"  # tout ce qui n'est pas référencé comme autorisé reste C
+USAGE_TYPES = {"Ephémères, partagés, pédagogiques", "Etablissements sportifs", "Jardins privatifs"}  # C « usage non public »
 
 CANDIDATES = {
     "id": ["nsq_espace_vert", "id_ev", "identifiant", "id", "objectid"],
@@ -62,8 +63,9 @@ def to_entry(rec):
     lat, lon = latlon(rec)
     t = pick(rec, "type_ev") or ""
     cat = "F" if t in F_TYPES else DEFAULT_CAT
-    reason = ("Voirie, décoration ou infrastructure non utilisable" if cat == "F"
-              else "Non référencé sur paris.fr — chiens non admis par défaut")
+    if cat == "F": reason = "Voirie, décoration ou infrastructure non utilisable"
+    elif t in USAGE_TYPES: reason = "Usage non public, sportif ou pédagogique — chiens non admis"
+    else: reason = "Non référencé sur paris.fr — chiens non admis ou non mentionnés par défaut"
     return {"id": pick(rec, "id"), "nom": pick(rec, "nom"), "arr": arr_of(pick(rec, "arr")),
             "type_ev": t, "categorie": pick(rec, "categorie") or "", "surface": pick(rec, "surface"),
             "cloture": pick(rec, "cloture") or "", "lat": lat, "lon": lon, "cat_phd": cat,
