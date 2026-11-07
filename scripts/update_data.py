@@ -35,6 +35,9 @@ def pick(rec, key):
     return None
 
 def fetch():
+    import os
+    if os.environ.get("PHD_SOURCE_FILE"):  # test local : export JSON téléchargé à la main
+        return json.load(open(os.environ["PHD_SOURCE_FILE"], encoding="utf-8"))
     req = urllib.request.Request(API, headers={"User-Agent": "paris-hates-dogs-updater"})
     with urllib.request.urlopen(req, timeout=120) as r:
         return json.load(r)
