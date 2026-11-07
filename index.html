@@ -406,6 +406,14 @@ html,body{overflow-x:hidden;max-width:100%}
   .m-legal{display:block;text-align:center;font-size:12px;padding:18px 14px 28px;color:var(--ink-light)}
   .m-legal a{color:var(--ink-mid);text-decoration:underline}
 }
+
+/* Mobile : liste des espaces repliée, ouverte par un bouton */
+.m-list-toggle{display:none}
+@media(max-width:768px){
+  .m-list-toggle{display:block;width:calc(100% - 28px);margin:12px 14px;padding:12px 14px;border:none;border-radius:24px;background:var(--ink);color:#fff;font:700 14px 'DM Sans',sans-serif;cursor:pointer;box-shadow:0 1px 3px rgba(13,43,51,.2)}
+  body.on-methodo .m-list-toggle{display:none}
+  #m-list:not(.open){display:none!important}
+}
 </style>
 </head>
 <body>
@@ -570,6 +578,7 @@ html,body{overflow-x:hidden;max-width:100%}
 </div>
 
 <!-- MOBILE LIST -->
+<button type="button" class="m-list-toggle" id="m-list-toggle" onclick="toggleMobileList()">Afficher la liste des espaces</button>
 <div class="m-list" id="m-list">
   <div class="m-list-header" id="m-list-header">— espaces</div>
   <div id="m-list-items"></div>
@@ -817,9 +826,9 @@ async function init(){
   document.getElementById('loading').style.display='none';
   if(typeof L==='undefined'){console.error('Leaflet indisponible');return;}
   try{
-    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomSnap:0.25,zoomControl:true,attributionControl:true,minZoom:11.5,maxBounds:PARIS_MAXB,maxBoundsViscosity:1.0});
+    map=L.map('map',{center:[48.8566,2.3522],zoom:12,zoomSnap:0.25,zoomControl:true,attributionControl:true,minZoom:11.5,maxBounds:PARIS_MAXB,maxBoundsViscosity:1.0,bounceAtZoomLimits:false});
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,attribution:'Tiles © Esri — Esri, HERE, Garmin, OpenStreetMap contributors'}).addTo(map);
-    try{const fitZ=()=>{const z=map.getBoundsZoom(PARIS_MAXB,false);const q=Math.ceil(z*4)/4;map.setMinZoom(Math.max(11.5,q));if(map.getZoom()<map.getMinZoom())map.setZoom(map.getMinZoom());};fitZ();window.addEventListener('resize',()=>setTimeout(fitZ,60));}catch(e){}
+    try{const fitZ=()=>{const z=map.getBoundsZoom(PARIS_MAXB,false);const q=Math.ceil(z*4)/4;map.setMinZoom(Math.max(11.5,q));if(map.getZoom()<map.getMinZoom())map.setZoom(map.getMinZoom());};fitZ();window.addEventListener('resize',()=>setTimeout(fitZ,60));map.on('resize',fitZ);window._fitZ=fitZ;}catch(e){}
     try{L.geoJSON(window.PARIS_GEO,{interactive:false,style:{color:'#9fd3db',weight:1,fillColor:'#fbfeff',fillOpacity:1}}).addTo(map);}catch(e){}
     window.addEventListener('resize',()=>{if(map)map.invalidateSize();});
     const zc=()=>{const c=map.getContainer();c.classList.toggle('z-low',map.getZoom()<11.75);c.classList.toggle('z-mid',map.getZoom()>=11.75&&map.getZoom()<13);};
@@ -831,7 +840,7 @@ async function init(){
       document.getElementById('map-view').classList.add('m-visible');
       const btn=document.getElementById('mf-toggle-map');
       btn.style.background='var(--ink)';btn.style.color='#fff';btn.style.borderColor='var(--ink)';
-      setTimeout(()=>{map.invalidateSize();map.fitBounds([[48.812,2.222],[48.905,2.472]],{padding:[4,4],animate:false});zc();},60);
+      setTimeout(()=>{map.invalidateSize();if(window._fitZ)window._fitZ();map.fitBounds([[48.812,2.222],[48.905,2.472]],{padding:[4,4],animate:false});if(window._fitZ)window._fitZ();zc();},60);
     }
   }catch(e){console.error(e);}
 }
@@ -900,7 +909,7 @@ function toggleMobileMap(){
   if(mobileMapVisible){
     mv.classList.add('m-visible');
     btn.style.background='var(--ink)';btn.style.color='#fff';btn.style.borderColor='var(--ink)';
-    setTimeout(()=>{if(map)map.invalidateSize();},150);
+    setTimeout(()=>{if(map){map.invalidateSize();if(window._fitZ)window._fitZ();}},150);
   } else {
     mv.classList.remove('m-visible');
     btn.style.background='';btn.style.color='';btn.style.borderColor='';
@@ -1033,13 +1042,21 @@ function showTab(tab){
  m.textContent='Envoi…';try{const r=await fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}});
  if(r.ok){f.reset();m.textContent='Merci ! Votre suggestion a bien été envoyée.';}else m.textContent="Échec de l'envoi, réessayez plus tard.";}catch(e){m.textContent="Échec de l'envoi, réessayez plus tard.";}});})();
 
+function toggleMobileList(){
+  const l=document.getElementById('m-list'),b=document.getElementById('m-list-toggle');if(!l||!b)return;
+  const open=l.classList.toggle('open');
+  b.textContent=open?'Masquer la liste des espaces':'Afficher la liste des espaces ('+currentListCount()+')';
+  if(open){try{l.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}}
+}
+function currentListCount(){try{return allData.filter(shouldShow).length;}catch(e){return '';}}
+function refreshListButton(){const l=document.getElementById('m-list'),b=document.getElementById('m-list-toggle');if(b&&l&&!l.classList.contains('open'))b.textContent='Afficher la liste des espaces ('+currentListCount()+')';}
 function renderMobileList(){
   if(window.innerWidth>768) return;
   const items=allData.filter(shouldShow);
   const header=document.getElementById('m-list-header');
   const container=document.getElementById('m-list-items');
   if(!header||!container) return;
-  header.textContent=items.length+' espace'+(items.length!==1?'s':'');
+  header.textContent=items.length+' espace'+(items.length!==1?'s':'');refreshListButton();
   if(items.length===0){container.innerHTML='<div class="m-list-empty">Aucun espace pour ces filtres.</div>';return;}
   const order={A:0,B:1,C:2,F:3};
   const sorted=[...items].sort((a,b)=>order[a.cat_phd]-order[b.cat_phd]||a.arr-b.arr);
