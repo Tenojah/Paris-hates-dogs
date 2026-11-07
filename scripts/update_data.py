@@ -82,17 +82,23 @@ def main():
             sys.exit(f"Abandon : champ '{k}' introuvable. Champs disponibles : {sorted(sample)}")
     new = {key(e): e for e in map(to_entry, raw) if e["nom"] and e["lat"] is not None}
 
+    by_name = {}
+    for k, v in new.items(): by_name.setdefault(norm(v["nom"]), []).append(k)
     out, added, removed, changed, seen = [], [], [], [], set()
     for e in data:
         if e.get("source") != "auto":
             out.append(e); continue
-        k = key(e); seen.add(k)
+        k = key(e)
         n = new.get(k)
+        if n is None and not e["id"]:  # anciennes entrées sans identifiant : rapprochement par nom
+            cand = [c for c in by_name.get(norm(e["nom"]), []) if c not in seen]
+            if cand: k = cand[0]; n = new[k]
+        seen.add(k)
         if n is None:
             removed.append(e); continue
         if e["cat_phd"] in ("A", "B"):  # ex. Bois de Boulogne/Vincennes : décision éditoriale, jamais rétrogradée
             n = dict(n, cat_phd=e["cat_phd"], reason=e.get("reason", n["reason"]))
-        if (n["cat_phd"], n["nom"], n["type_ev"]) != (e["cat_phd"], e["nom"], e["type_ev"]):
+        if (n["cat_phd"], n["nom"]) != (e["cat_phd"], e["nom"]):
             changed.append((e, n))
         fields = ["nom", "arr", "type_ev", "categorie", "surface", "cloture", "lat", "lon", "cat_phd"]
         if n["cat_phd"] != e["cat_phd"]: fields.append("reason")  # on ne réécrit la justification que si la catégorie change
@@ -103,6 +109,8 @@ def main():
         if k not in seen and k not in manual_keys:
             out.append(n); added.append(n)
 
+    live_names = {norm(v["nom"]) for v in new.values()}
+    manual_gone = [e for e in data if e.get("source") != "auto" and e.get("type_ev") != "Espace canin" and norm(e["nom"]) not in live_names]
     counts = {c: sum(1 for e in out if e["cat_phd"] == c) for c in "ABCF"}
     json.dump(out, open("phd_data.json", "w", encoding="utf-8"), ensure_ascii=False)
     h = open("index.html", encoding="utf-8").read()
@@ -119,10 +127,12 @@ def main():
         r.write("- Les nouveaux espaces sont classés automatiquement C ou F : vérifier sur paris.fr s'ils sont autorisés aux chiens (B) ou s'il s'agit d'un espace canin (A).\n\n")
         for t, lst in (("Ajoutés", added), ("Retirés", removed)):
             r.write(f"### {t}\n\n")
-            for e in lst[:200]: r.write(f"- {e['nom']} ({e['arr']}e, {e['type_ev']}) → {e['cat_phd']}\n")
+            for e in lst[:200]: r.write(f"- {e['nom']} ({str(e['arr'])+'e' if e['arr'] else 'arr. inconnu'}, {e['type_ev']}) → {e['cat_phd']}\n")
             r.write("\n")
-        r.write("### Modifiés\n\n")
-        for o, n in changed[:200]: r.write(f"- {o['nom']} : {o['cat_phd']}/{o['type_ev']} → {n['cat_phd']}/{n['type_ev']}\n")
+        r.write("### Espaces classés à la main introuvables dans l'Open Data (vérifier : renommés ou supprimés ?)\n\n")
+        for e in manual_gone[:300]: r.write(f"- {e['nom']} ({e['cat_phd']})\n")
+        r.write("\n### Modifiés (catégorie ou nom)\n\n")
+        for o, n in changed[:200]: r.write(f"- {o['nom']} : {o['cat_phd']} → {n['cat_phd']} ; nom : {o['nom']} → {n['nom']} ({n['type_ev']})\n")
     print(open("rapport.md", encoding="utf-8").read()[:600])
 
 if __name__ == "__main__":
