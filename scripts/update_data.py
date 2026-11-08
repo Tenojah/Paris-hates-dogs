@@ -63,7 +63,7 @@ def to_entry(rec):
     lat, lon = latlon(rec)
     t = pick(rec, "type_ev") or ""
     cat = "F" if t in F_TYPES else DEFAULT_CAT
-    if cat == "F": reason = "Voirie, décoration ou infrastructure non utilisable"
+    if cat == "F": reason = "Voirie, décoration ou infrastructure non utilisable, ou chemin non fermé, type quai"
     elif t in USAGE_TYPES: reason = "Usage non public, sportif ou pédagogique — chiens non admis"
     else: reason = "Non référencé sur paris.fr — chiens non admis ou non mentionnés par défaut"
     return {"id": pick(rec, "id"), "nom": pick(rec, "nom"), "arr": arr_of(pick(rec, "arr")),
