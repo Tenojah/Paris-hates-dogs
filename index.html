@@ -826,7 +826,7 @@ function copyText(t,btn){const ok=()=>{if(btn){const o=btn.textContent;btn.textC
   function fb(t,ok){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();try{document.execCommand('copy');ok();}catch(e){}x.remove();}}
 function copyMail(id,btn){const el=document.getElementById(id);copyText(el.value,btn);el.focus();el.select();}
 async function init(){
-  allData=window.PHD_DATA||[];
+  allData=window.PHD_DATA||[];allData.forEach((e,i)=>{e._k=i;});
   try{syncPillUI();}catch(e){console.error(e)}
   try{updateStats();}catch(e){console.error(e)}
   try{updateCounts();}catch(e){console.error(e)}
@@ -865,8 +865,23 @@ function buildMarkers(){
     else{const s=ev.cat_phd==='A'?30:ev.cat_phd==='B'?22:17;
       const bo=ev.sous_type==='bois',S=bo?40:s,W=bo?Math.round(S*44/36):S;m=L.marker([ev.lat,ev.lon],{icon:L.divIcon({className:bo?'phd-ico phd-medal':'phd-ico',html:iconSVG(ev.cat_phd,S,ev.sous_type),iconSize:[W,S],iconAnchor:[bo?W*16/44:S/2,bo?S*20/36:S/2]}),zIndexOffset:bo?3000:ev.cat_phd==='A'?1000:ev.cat_phd==='B'?500:0});}
     m.on('click',()=>showDetail(ev));
-    markers[ev.id]=m;
+    markers[ev._k]=m;
   });
+  addLafay();
+}
+let lafayLayer=null,lafayBadge=null;
+function addLafay(){
+  if(lafayLayer){map.removeLayer(lafayLayer);lafayLayer=null}
+  if(lafayBadge){map.removeLayer(lafayBadge);lafayBadge=null}
+  const seg=allData.filter(e=>/BERNARD LAFAY - /.test(e.nom)).sort((a,b)=>a.nom<b.nom?-1:1);
+  if(seg.length<2) return;
+  const pts=seg.map(e=>[e.lat,e.lon]);
+  lafayLayer=L.polyline(pts,{color:'#0d2b33',weight:4,dashArray:'1 9',lineCap:'round',opacity:.85,interactive:false}).addTo(map);
+  const c=[pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length];
+  lafayBadge=L.marker(c,{icon:L.divIcon({className:'',html:'<div style="background:#0d2b33;color:#fff;font:700 12px Poppins,sans-serif;padding:5px 9px;border-radius:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;display:inline-block;width:max-content;transform:translate(-50%,-50%)">Promenade Bernard Lafay · '+seg.length+' tronçons</div>',iconSize:[0,0]}),zIndexOffset:2000,interactive:true});
+  lafayBadge.on('click',()=>map.setView(c,14));
+  const upd=()=>{const z=map.getZoom();if(z===13){if(!map.hasLayer(lafayBadge))lafayBadge.addTo(map)}else if(map.hasLayer(lafayBadge))map.removeLayer(lafayBadge);if(z>=13){if(!map.hasLayer(lafayLayer))lafayLayer.addTo(map)}else if(map.hasLayer(lafayLayer))map.removeLayer(lafayLayer)};
+  map.off('zoomend.lafay');map.on('zoomend',upd);upd();
 }
 
 function shouldShow(ev){
@@ -877,7 +892,7 @@ function shouldShow(ev){
 
 function renderMarkers(){
   allData.forEach(ev=>{
-    const m=markers[ev.id];
+    const m=markers[ev._k];
     if(!m) return;
     if(shouldShow(ev)){if(!map.hasLayer(m))m.addTo(map);}
     else{if(map.hasLayer(m))map.removeLayer(m);}
@@ -1071,7 +1086,7 @@ function renderMobileList(){
   const tagClass={A:'m-tag-A',B:'m-tag-B',C:'m-tag-C',F:'m-tag-F'};
   const tagLabel={A:'Dog friendly',B:'Semi',C:'Not dog friendly',F:'Faux espace'};
   container.innerHTML=sorted.slice(0,200).map(ev=>`
-    <div class="m-list-item" onclick="openFromList(${ev.id})">
+    <div class="m-list-item" onclick="openFromList(${ev._k})">
       ${iconSVG(ev.cat_phd,18)}
       <span class="m-item-name">${cap(ev.nom)}</span>
       <span class="m-item-tag ${tagClass[ev.cat_phd]}">${tagLabel[ev.cat_phd]}</span>
@@ -1079,8 +1094,8 @@ function renderMobileList(){
     </div>`).join('')+(sorted.length>200?`<div class="m-list-empty">+${sorted.length-200} autres — affinez les filtres.</div>`:'');
 }
 
-function openFromList(id){
-  const ev=allData.find(e=>e.id===id);
+function openFromList(k){
+  const ev=allData[k];
   if(ev) showDetail(ev);
 }
 
