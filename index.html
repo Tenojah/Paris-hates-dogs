@@ -880,7 +880,7 @@ function addLafay(){
   const c=[pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length];
   lafayBadge=L.marker(c,{icon:L.divIcon({className:'',html:'<div style="background:#0d2b33;color:#fff;font:700 12px Poppins,sans-serif;padding:5px 9px;border-radius:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;display:inline-block;width:max-content;transform:translate(-50%,-50%)">Promenade Bernard Lafay · '+seg.length+' tronçons</div>',iconSize:[0,0]}),zIndexOffset:2000,interactive:true});
   lafayBadge.on('click',()=>map.setView(c,14));
-  const upd=()=>{if(map.getZoom()<14){if(!map.hasLayer(lafayBadge))lafayBadge.addTo(map)}else if(map.hasLayer(lafayBadge))map.removeLayer(lafayBadge)};
+  const upd=()=>{const z=map.getZoom();if(z===13){if(!map.hasLayer(lafayBadge))lafayBadge.addTo(map)}else if(map.hasLayer(lafayBadge))map.removeLayer(lafayBadge);if(z>=13){if(!map.hasLayer(lafayLayer))lafayLayer.addTo(map)}else if(map.hasLayer(lafayLayer))map.removeLayer(lafayLayer)};
   map.off('zoomend.lafay');map.on('zoomend',upd);upd();
 }
 
