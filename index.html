@@ -826,7 +826,7 @@ function copyText(t,btn){const ok=()=>{if(btn){const o=btn.textContent;btn.textC
   function fb(t,ok){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();try{document.execCommand('copy');ok();}catch(e){}x.remove();}}
 function copyMail(id,btn){const el=document.getElementById(id);copyText(el.value,btn);el.focus();el.select();}
 async function init(){
-  allData=window.PHD_DATA||[];
+  allData=window.PHD_DATA||[];allData.forEach((e,i)=>{e._k=i;});
   try{syncPillUI();}catch(e){console.error(e)}
   try{updateStats();}catch(e){console.error(e)}
   try{updateCounts();}catch(e){console.error(e)}
@@ -865,7 +865,7 @@ function buildMarkers(){
     else{const s=ev.cat_phd==='A'?30:ev.cat_phd==='B'?22:17;
       const bo=ev.sous_type==='bois',S=bo?40:s,W=bo?Math.round(S*44/36):S;m=L.marker([ev.lat,ev.lon],{icon:L.divIcon({className:bo?'phd-ico phd-medal':'phd-ico',html:iconSVG(ev.cat_phd,S,ev.sous_type),iconSize:[W,S],iconAnchor:[bo?W*16/44:S/2,bo?S*20/36:S/2]}),zIndexOffset:bo?3000:ev.cat_phd==='A'?1000:ev.cat_phd==='B'?500:0});}
     m.on('click',()=>showDetail(ev));
-    markers[ev.id]=m;
+    markers[ev._k]=m;
   });
 }
 
@@ -877,7 +877,7 @@ function shouldShow(ev){
 
 function renderMarkers(){
   allData.forEach(ev=>{
-    const m=markers[ev.id];
+    const m=markers[ev._k];
     if(!m) return;
     if(shouldShow(ev)){if(!map.hasLayer(m))m.addTo(map);}
     else{if(map.hasLayer(m))map.removeLayer(m);}
@@ -1071,7 +1071,7 @@ function renderMobileList(){
   const tagClass={A:'m-tag-A',B:'m-tag-B',C:'m-tag-C',F:'m-tag-F'};
   const tagLabel={A:'Dog friendly',B:'Semi',C:'Not dog friendly',F:'Faux espace'};
   container.innerHTML=sorted.slice(0,200).map(ev=>`
-    <div class="m-list-item" onclick="openFromList(${ev.id})">
+    <div class="m-list-item" onclick="openFromList(${ev._k})">
       ${iconSVG(ev.cat_phd,18)}
       <span class="m-item-name">${cap(ev.nom)}</span>
       <span class="m-item-tag ${tagClass[ev.cat_phd]}">${tagLabel[ev.cat_phd]}</span>
@@ -1079,8 +1079,8 @@ function renderMobileList(){
     </div>`).join('')+(sorted.length>200?`<div class="m-list-empty">+${sorted.length-200} autres — affinez les filtres.</div>`:'');
 }
 
-function openFromList(id){
-  const ev=allData.find(e=>e.id===id);
+function openFromList(k){
+  const ev=allData[k];
   if(ev) showDetail(ev);
 }
 
