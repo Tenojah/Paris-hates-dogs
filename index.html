@@ -25,7 +25,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<style>
+<style>.phd-tip{background:#0d2b33!important;color:#fff!important;border:none!important;border-radius:8px!important;box-shadow:0 3px 10px rgba(0,0,0,.35)!important;font:600 13px Poppins,sans-serif!important;padding:6px 10px!important}.phd-tip:before{border-top-color:#0d2b33!important}.phd-tip small{display:block;font-weight:500;font-size:11px;opacity:.8}
+
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --cream:#f4fafb; --cream-dark:#e3f3f6; --cream-border:#d3e6ea;
@@ -855,6 +856,7 @@ async function init(){
 
 const ICON_ID={A:'pdog',B:'ptag',C:'pfine',F:'pgray'};
 function iconSVG(cat,size,sub){if(sub==='bois')return '<svg width="'+Math.round(size*44/36)+'" height="'+size+'" viewBox="0 0 44 36"><use href="#pbois"/></svg>';return '<svg width="'+size+'" height="'+size+'" style="color:'+CAT_COLORS[cat]+'"><use href="#'+ICON_ID[cat]+'"/></svg>';}
+function niceName(n){return String(n||'').toLowerCase().replace(/(^|[\s\-'’(])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase()).replace(/[<>&]/g,'');}
 function buildMarkers(){
   Object.values(markers).forEach(m=>{try{map.removeLayer(m);}catch(e){}});
   markers={};
@@ -865,6 +867,7 @@ function buildMarkers(){
     else{const s=ev.cat_phd==='A'?30:ev.cat_phd==='B'?22:17;
       const bo=ev.sous_type==='bois',S=bo?40:s,W=bo?Math.round(S*44/36):S;m=L.marker([ev.lat,ev.lon],{icon:L.divIcon({className:bo?'phd-ico phd-medal':'phd-ico',html:iconSVG(ev.cat_phd,S,ev.sous_type),iconSize:[W,S],iconAnchor:[bo?W*16/44:S/2,bo?S*20/36:S/2]}),zIndexOffset:bo?3000:ev.cat_phd==='A'?1000:ev.cat_phd==='B'?500:0});}
     m.on('click',()=>showDetail(ev));
+    if(!isF){m.bindTooltip('<b>'+niceName(ev.nom)+'</b><small>'+CAT_LABELS[ev.cat_phd]+'</small>',{className:'phd-tip',direction:'top',offset:[0,-8]});}
     markers[ev._k]=m;
   });
   addLafay();
