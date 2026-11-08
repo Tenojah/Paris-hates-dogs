@@ -867,6 +867,21 @@ function buildMarkers(){
     m.on('click',()=>showDetail(ev));
     markers[ev._k]=m;
   });
+  addLafay();
+}
+let lafayLayer=null,lafayBadge=null;
+function addLafay(){
+  if(lafayLayer){map.removeLayer(lafayLayer);lafayLayer=null}
+  if(lafayBadge){map.removeLayer(lafayBadge);lafayBadge=null}
+  const seg=allData.filter(e=>/BERNARD LAFAY - /.test(e.nom)).sort((a,b)=>a.nom<b.nom?-1:1);
+  if(seg.length<2) return;
+  const pts=seg.map(e=>[e.lat,e.lon]);
+  lafayLayer=L.polyline(pts,{color:'#0d2b33',weight:4,dashArray:'1 9',lineCap:'round',opacity:.85,interactive:false}).addTo(map);
+  const c=[pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length];
+  lafayBadge=L.marker(c,{icon:L.divIcon({className:'',html:'<div style="background:#0d2b33;color:#fff;font:700 12px Poppins,sans-serif;padding:5px 9px;border-radius:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;display:inline-block;width:max-content;transform:translate(-50%,-50%)">Promenade Bernard Lafay · '+seg.length+' tronçons</div>',iconSize:[0,0]}),zIndexOffset:2000,interactive:true});
+  lafayBadge.on('click',()=>map.setView(c,14));
+  const upd=()=>{if(map.getZoom()<14){if(!map.hasLayer(lafayBadge))lafayBadge.addTo(map)}else if(map.hasLayer(lafayBadge))map.removeLayer(lafayBadge)};
+  map.off('zoomend.lafay');map.on('zoomend',upd);upd();
 }
 
 function shouldShow(ev){
